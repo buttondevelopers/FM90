@@ -2,7 +2,7 @@
 <!--
   ============================================================================
   Magistral — Sistema de gestión de preparados magistrales
-  © 2026 Darío Jiménez. Todos los derechos reservados.
+  © 2026 Darío Jimenez. Todos los derechos reservados.
 
   SOFTWARE PROPIETARIO Y CONFIDENCIAL.
   Queda prohibida la copia, distribución, modificación, descompilación o uso
@@ -10,7 +10,7 @@
   titular. El acceso a este archivo no transfiere ningún derecho de propiedad.
   Se entrega únicamente bajo licencia de uso.
 
-  Contacto: [tu email]
+  Contacto: dario.a.jimenez@gmail.com
   ============================================================================
 -->
 <html lang="es-AR">
@@ -21,9 +21,76 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  :root{--green:#2F6933;--green-d:#244F27;--green-l:#E7EFE7;--dark:#1C1C1E;--gray:#8E8E93;
-    --bg:#F2F1ED;--card:#FFF;--line:#E4E3DE;--line2:#EFEEEA;--blue:#0760A4;--amber:#C8742B;--red:#C0392B;
+  :root{--green:#2F6933;--green-d:#244F27;--green-l:#E7EFE7;--dark:#1C1C1E;--ink:#1C1C1E;--gray:#8E8E93;--muted:#8E8E93;
+    --bg:#F2F1ED;--card:#FFF;--line:#E4E3DE;--line2:#EFEEEA;--blue:#0760A4;--amber:#C8742B;--red:#C0392B;--red-l:#FBE9E6;
     --r:15px;--sh:0 1px 2px rgba(0,0,0,.04),0 10px 30px -18px rgba(0,0,0,.22);}
+  /* ── Dark mode ── */
+  :root.dark{
+    --bg:#000000;--card:#1C1C1E;--dark:#FFFFFF;--ink:#FFFFFF;
+    --line:#38383A;--line2:#2C2C2E;--gray:#8E8E93;--muted:#8E8E93;
+    --green:#30D158;--green-l:#1A2E1C;--green-d:#25773A;
+    --blue:#0A84FF;--amber:#FF9F0A;--red:#FF453A;--red-l:#3D1010;
+    --sh:0 1px 3px rgba(0,0,0,.5),0 10px 30px -10px rgba(0,0,0,.7);
+    color-scheme:dark;
+  }
+  :root.dark .inp,:root.dark .ta{background:#2C2C2E;color:#fff;border-color:var(--line)}
+  :root.dark .sel{background:#2C2C2E;color:#fff;border-color:var(--line)}
+  :root.dark .selwrap::after{border-top-color:#8E8E93}
+  :root.dark .login-card{background:#1C1C1E}
+  :root.dark .login-card .sel,:root.dark .login-card input{background:#2C2C2E;color:#fff;border-color:#38383A}
+  :root.dark .login-hint{background:#2C2C2E;color:var(--gray)}
+  :root.dark .login-warn{background:#2E1800;border-color:var(--amber);color:var(--amber)}
+  :root.dark #login{background:linear-gradient(160deg,#000,#1A1A1A)}
+  :root.dark .btn-cancel{background:#2C2C2E;color:var(--gray)}
+  :root.dark .ltab.on, :root.dark .fbtn.on { color: #000; }
+  :root.dark .irow-form,:root.dark .irow-form-new{background:#1C1C1E}
+  :root.dark .acc-detail{background:#1C1C1E}
+  :root.dark .sugg-list{background:#1C1C1E}
+  :root.dark .sugg-item{color:#fff;border-color:var(--line)}
+  :root.dark .sugg-item:active{background:#2C2C2E}
+  :root.dark .ithumb,:root.dark .acc-img{background:#000}
+  :root.dark .pv img{background:#000}
+  :root.dark .noprint{background:#1C2E1C;color:var(--green)}
+  :root.dark #userbar .lo{background:#2C2C2E!important;border-color:#38383A!important;color:var(--gray)!important}
+  :root.dark .btn-add[style*="FBE9E6"],:root.dark .btn-add[style*="fbe9e6"]{background:var(--red-l)!important}
+  :root.dark .login-warn.amber{background:#2E1800}
+  :root.dark .group{box-shadow:none}
+  :root.dark .selrow{box-shadow:none}
+  :root.dark .acard{box-shadow:none}
+  :root.dark .item{box-shadow:none}
+  :root.dark .mcard{box-shadow:none}
+  :root.dark .env-calc-result{background:#1A2E1C!important;border-color:var(--green)!important}
+  :root.dark input[type="color"]{background:#2C2C2E;border-color:var(--line)}
+  :root.dark .dw{background:#1C1C1E}
+  :root.dark .dwh{background:#2C2C2E;border-color:var(--line)}
+  
+  /* Arreglo Iconos Listas (motos, cajas) */
+  :root.dark .iicon {background:#2C2C2E !important; color:var(--blue) !important;}
+  /* --- ARREGLO DEL TOAST (Carteles de aviso) y BTN-DARK --- */
+  :root.dark #toast { background: #2C2C2E; color: #FFFFFF; border: 1px solid var(--line); }
+  :root.dark .btn-dark { color: #000000; }
+
+  /* --- ARREGLO DE PASTILLAS/CHIPS --- */
+  :root.dark .chip.pendiente{background:#3D2E00;color:var(--amber)}
+  :root.dark .chip.aceptado{background:#0A2040;color:var(--blue)}
+  :root.dark .chip.listo{background:#0A2E14;color:var(--green)}
+  :root.dark .chip.rechazado{background:#3D1010;color:var(--red)}
+  :root.dark .chip.en_preparacion{background:#1C0A3D;color:#BF5AF2}
+  :root.dark .chip.entregado{background:#2C2C2E;color:var(--gray)}
+
+  /* --- BARRIDO GLOBAL: CAZADOR DE ESTILOS INLINE --- */
+  /* Botón Cargar Cliente Nuevo y similares (gris claro) */
+  :root.dark .btn-add[style*="f4f6f4"] { background: var(--line2) !important; color: var(--dark) !important; }
+  /* Fondo interno del Formulario Envío Nuevo */
+  :root.dark #env-nuevo-form { background: var(--bg) !important; }
+  /* Caja verde claro del Backup (Contenido del backup) */
+  :root.dark .group[style*="EEF9F0"] { background: var(--green-l) !important; border-color: var(--green-d) !important; }
+  :root.dark .group[style*="EEF9F0"] div { color: var(--green) !important; }
+  /* Caja amarilla de advertencias en Backup */
+  :root.dark .login-warn[style*="FFF3CD"] { background: #2E1800 !important; border-color: var(--amber) !important; color: var(--amber) !important; }
+  /* Caja warning Receta (Sin Foto) */
+  :root.dark .reason[style*="FBF0DA"] { background: #2E1800 !important; border-color: var(--amber) !important; color: var(--amber) !important; }
+
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--dark);line-height:1.45;-webkit-font-smoothing:antialiased}
   button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
@@ -196,6 +263,11 @@
   .acc-img{width:100%;border-radius:10px;max-height:230px;object-fit:contain;background:#1c1c1e;margin-bottom:12px;display:block}
   .acc-act{margin-top:14px;display:flex;flex-direction:column;gap:8px}
   .rk.open{background:var(--green-l);border-color:var(--green)}
+  .irow-open{border-radius:var(--r) var(--r) 0 0!important;border-bottom-color:transparent!important;margin-bottom:0!important}
+  .irow-form{background:var(--card);border:1.5px solid var(--green);border-top:none;border-radius:0 0 var(--r) var(--r);padding:16px 18px 18px;margin-bottom:12px;animation:accIn .2s ease}
+  .irow-form-new{background:var(--card);border:1.5px solid var(--green);border-radius:var(--r);padding:16px 18px 18px;margin-top:8px;animation:accIn .2s ease}
+  .form-actions{display:flex;gap:8px;margin-top:2px}
+  .btn-cancel{flex:0;background:#f3f4f3;color:var(--muted);border:none;border-radius:12px;padding:13px 18px;font-size:15px;font-weight:700;cursor:pointer}
   .dimg{width:100%;border-radius:var(--r);border:1px solid var(--line);background:#1c1c1e;max-height:280px;object-fit:contain;margin-bottom:16px;display:block}
   .prepbox{background:var(--green-l);border:1px solid rgba(14,123,70,.2);border-radius:var(--r);padding:14px;margin-bottom:6px}
   .prepbox .pl{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--green);margin-bottom:5px}
@@ -220,6 +292,51 @@
 
   #toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);z-index:90;background:var(--dark);color:#fff;padding:13px 18px;border-radius:13px;font-size:14.5px;font-weight:600;display:flex;align-items:center;gap:9px;opacity:0;pointer-events:none;box-shadow:0 12px 30px rgba(0,0,0,.3)}
   #toast svg{width:18px;height:18px;color:#5FD08A}
+  
+  /* Arreglo para botones que están agrupados (Confirmar/Cancelar) */
+  .form-actions .btn-primary, .form-actions .btn-ghost { 
+    max-width: none; 
+    margin: 0; 
+  }
+  
+  /* ── RESPONSIVE / MODO PC (DASHBOARD) ── */
+  @media (min-width: 800px) {
+    /* 1. Fondo del sistema y centrado de la "ventana" */
+    body { background: #d5d4d0; padding: 40px 0; display: flex; justify-content: center; align-items: flex-start; }
+    :root.dark body { background: #0a0a0a; }
+    
+    /* 2. La app pasa a ser una tarjeta flotante elegante (max 860px) */
+    .app { 
+      width: 100%; 
+      max-width: 860px; 
+      min-height: calc(100vh - 80px); 
+      border-radius: 24px; 
+      box-shadow: 0 30px 60px -15px rgba(0,0,0,0.3); 
+      border: 1px solid var(--line); 
+      margin: 0; 
+      overflow: hidden;
+    }
+    
+    /* 3. Ajustamos el Header para que respete el borde redondeado */
+    .head { border-radius: 24px 24px 0 0; padding: 20px 40px; }
+    .ctx, .main { padding-left: 40px; padding-right: 40px; }
+    
+    /* 4. Tarjetas chicas (mini) en 4 columnas en lugar de 2 */
+    .mini { grid-template-columns: repeat(4, 1fr); margin-top: 15px; }
+    
+    /* 5. Cajón inferior (Drawer) estilo flotante de iPad */
+    .dw { 
+      max-width: 500px; 
+      bottom: 30px; 
+      border-radius: 20px; 
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5); 
+      border: 1px solid var(--line); 
+    }
+    
+    /* 6. Formularios y botones principales: los limitamos para que no sean gigantes */
+    .btn-primary, .btn-ghost { max-width: 400px; margin-left: auto; margin-right: auto; }
+    .steps { max-width: 600px; margin: 20px auto 30px; }
+  }
 </style>
 </head>
 <body>
@@ -243,7 +360,7 @@ const Store=(()=>{const mem={};const ws=(window.storage&&typeof window.storage.g
   async function set(k,v){if(ws){try{await ws.set(k,v,true);return}catch(e){}}try{localStorage.setItem(k,v);return}catch(e){mem[k]=v}}
   return{async getJSON(k,d){const v=await get(k);if(v==null)return d;try{return JSON.parse(v)}catch(e){return d}},async setJSON(k,o){await set(k,JSON.stringify(o))},get,set};
 })();
-const K={ORD:'mg3:orders',PAC:'mg3:pac',MED:'mg3:med',SUC:'mg3:suc',VEND:'mg3:vend',CFG:'mg3:cfg',USERS:'mg3:users',PRODS:'mg3:prods',IMG:id=>'mg3:img:'+id};
+const K={ORD:'mg3:orders',PAC:'mg3:pac',MED:'mg3:med',SUC:'mg3:suc',VEND:'mg3:vend',CFG:'mg3:cfg',USERS:'mg3:users',PRODS:'mg3:prods',CLI:'mg3:cli',ENV:'mg3:env',IMG:id=>'mg3:img:'+id};
 
 /* ===== CONST ===== */
 const SUCURSALES=['Sucursal Haedo','Moreno 90 - Central','Sucursal Ramos Mejía','Sucursal Morón'];
@@ -255,11 +372,11 @@ const ESTADOS={pendiente:'Pendiente',aceptado:'Aceptado',en_preparacion:'En prep
 const AVCOL=['#0E7B46','#C8742B','#2C6E8F','#7A4B8A','#A8412E'];
 
 /* ===== STATE ===== */
-const state={session:null,role:'farma',openId:null,screen:'home',sucursal:SUCURSALES[0],vendedor:'Carla',op:'Lab · Dr. Sosa',filter:'todos',
+const state={session:null,role:'farma',openId:null,domTab:'envios',domFilter:'todos',domOpenId:null,sucEdit:null,vendEdit:null,userEdit:null,medEdit:null,cliEdit:null,envNew:false,screen:'home',sucursal:SUCURSALES[0],vendedor:'Carla',op:'Lab · Dr. Sosa',filter:'todos',
   wped:{step:0,urgencia:null,items:[],obs:''},
   wrec:{step:0,img:null,medicoId:null,medQ:'',pacQ:'',prod:'',pres:'',cant:1,obs:''},
   rep:{desde:'',hasta:'',medId:null}};
-let orders=[],pacientes=[],medicos=[],sucursalesList=[],vendedoresList=[],usuarios=[],productos=[],config={};
+let orders=[],pacientes=[],medicos=[],sucursalesList=[],vendedoresList=[],usuarios=[],productos=[],clientesEnvio=[],enviosDom=[],config={};
 const sucAct=()=>sucursalesList.filter(s=>s.activa);
 const vendAct=()=>vendedoresList.filter(v=>v.activo);
 const usuAct=()=>usuarios.filter(u=>u.activo);
@@ -290,6 +407,8 @@ async function loadAll(){
     {id:uid(),nombre:'Admin',usuario:'admin',pin:'1234',rol:'admin',sucursal:null,activo:true}
   ];await Store.setJSON(K.USERS,usuarios);}
   productos=await Store.getJSON(K.PRODS,[]);
+  clientesEnvio=await Store.getJSON(K.CLI,[]);
+  enviosDom=await Store.getJSON(K.ENV,[]);
   config=await Store.getJSON(K.CFG,null)||{nombre:'Farmacia Moreno 90',color:'#2F6933'};
   applyConfig();
 }
@@ -303,7 +422,9 @@ const roleHome=r=>r==='farmacia'?'home':r==='laboratorio'?'bandeja':'cfg-suc';
 const roleTok=r=>r==='farmacia'?'farma':r==='laboratorio'?'lab':'admin';
 function renderLogin(){
   const logoEl=document.querySelector('.logoimg');const src=logoEl?logoEl.src:'';
-  $('#login').innerHTML=`<div class="login-card">
+  const isDark=!!config.darkMode;
+  $('#login').innerHTML=`<div class="login-card" style="position:relative">
+    <button onclick="toggleDarkMode()" style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;padding:4px;line-height:1" title="${isDark?'Modo claro':'Modo oscuro'}">${isDark?'☀️':'🌙'}</button>
     ${src?`<img src="${src}" alt="">`:''}
     <div class="lt">Iniciar sesión</div>
     <div class="ls">${esc(config.nombre||'Magistral')}</div>
@@ -343,10 +464,18 @@ function logout(){
 function fillUserbar(){
   const u=state.session, bar=$('#userbar'); if(!bar)return;
   if(!u){bar.innerHTML='';return;}
+  const isDark=!!config.darkMode;
   bar.innerHTML=`<div class="ua" style="background:${avc(u.nombre)}">${inicial(u.nombre)}</div>
     <div><div class="un">${esc(u.nombre)}</div><div class="ur">${ROLES[u.rol]}${u.sucursal?' · '+esc(u.sucursal):''}</div></div>
-    <button class="lo" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Salir</button>`;
+    <button class="lo" onclick="toggleDarkMode()" title="${isDark?'Modo claro':'Modo oscuro'}" style="margin-left:auto;padding:8px 10px">${isDark?'☀️':'🌙'}</button>
+    <button class="lo" onclick="logout()" style="margin-left:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Salir</button>`;
 }
+async function toggleDarkMode(){config.darkMode=!config.darkMode;await Store.setJSON(K.CFG,config);if (config.darkMode) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }applyConfig();if(state.session)fillUserbar();else renderLogin();}
+function xEdit(k,v){if(state[k]===v)state[k]=null;else{Object.keys(state).filter(x=>x.endsWith('Edit')||x==='envNew').forEach(x=>state[x]=x.endsWith('Edit')?null:false);state[k]=v;}render();}
 function setRole(r){state.role=r;state.filter='todos';nav(roleHome(r==='farma'?'farmacia':r==='lab'?'laboratorio':'admin'));}
 function nav(screen){state.screen=screen;render();}
 function render(){
@@ -359,17 +488,17 @@ function render(){
     ctx=`<div class="labtabs">${T('bandeja','Bandeja',pend)}${T('reportes','Reportes')}${T('medicos','Médicos')}</div>`;
   } else if(state.role==='admin'){
     const T=(s,l)=>`<button class="ltab ${state.screen===s?'on':''}" onclick="nav('${s}')">${l}</button>`;
-    ctx=`<div class="labtabs">${T('cfg-suc','Sucursales')}${T('cfg-users','Usuarios')}${T('cfg-med','Médicos')}${T('cfg-farma','Farmacia')}${T('cfg-backup','Backup')}</div>`;
+    ctx=`<div class="labtabs">${T('cfg-suc','Sucursales')}${T('cfg-users','Usuarios')}${T('cfg-med','Médicos')}${T('cfg-farma','Farmacia')}${T('cfg-backup','Backup')}${T('domicilios','Domicilios')}</div>`;
   } else if(state.screen==='home'){
     ctx=`<div class="ctx"><div class="selrow">
       <div><label class="lbl">Sucursal</label><div class="selwrap"><select class="sel" onchange="state.sucursal=this.value">${sucAct().map(s=>`<option ${s.nombre===state.sucursal?'selected':''}>${esc(s.nombre)}</option>`).join('')}</select></div></div>
     </div></div>`;
   } else {
-    const titles={pedido:'Pedido al laboratorio',receta:'Receta magistral',envios:'Mis envíos',medicos:'Médicos',pacientes:'Pacientes',reportes:'Reportes'};
+    const titles={pedido:'Pedido al laboratorio',receta:'Receta magistral',envios:'Mis envíos',medicos:'Médicos',pacientes:'Pacientes',reportes:'Reportes',domicilios:'Envíos a domicilio'};
     ctx=`<div class="topnav"><button class="back" onclick="nav('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Inicio</button><span class="tt">${titles[state.screen]||''}</span></div>`;
   }
   $('#ctx').innerHTML=ctx;
-  const R={home:renderHome,pedido:renderPedido,receta:renderReceta,envios:renderLista,bandeja:renderLista,medicos:renderMedicos,pacientes:renderPacientes,reportes:renderReportes,'cfg-suc':renderCfgSuc,'cfg-vend':renderCfgVend,'cfg-users':renderCfgUsers,'cfg-med':renderCfgMed,'cfg-farma':renderCfgFarma,'cfg-backup':renderCfgBackup};
+  const R={home:renderHome,pedido:renderPedido,receta:renderReceta,envios:renderLista,bandeja:renderLista,medicos:renderMedicos,pacientes:renderPacientes,reportes:renderReportes,'cfg-suc':renderCfgSuc,'cfg-vend':renderCfgVend,'cfg-users':renderCfgUsers,'cfg-med':renderCfgMed,'cfg-farma':renderCfgFarma,'cfg-backup':renderCfgBackup,'domicilios':renderDomicilios};
   $('#main').innerHTML=(R[state.screen]||(()=>''))();
   if(state.screen==='receta')wireReceta();
   gsap.fromTo('.main > *',{y:16,opacity:0},{y:0,opacity:1,duration:.36,stagger:.05,ease:'power2.out'});
@@ -382,6 +511,7 @@ function renderHome(){
   return `<div class="qh">¿Qué necesitás hacer?</div><div class="sub">Tocá una opción para empezar.</div>
   <div class="acard" onclick="startPedido()"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></div><div><div class="tt">Pedido al laboratorio</div><div class="ds">Pedir productos / preparados para reponer en mostrador</div></div><div class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></div></div>
   <div class="acard" onclick="startReceta()"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 9V3M8 3h8M7 14h10"/></svg></div><div><div class="tt">Receta magistral</div><div class="ds">Pasar una receta al lab con foto y cotizar</div></div><div class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></div></div>
+  <div class="acard" onclick="nav('domicilios')"><div class="ic" style="background:linear-gradient(135deg,#0760A420,#0760A408)"><svg viewBox="0 0 24 24" fill="none" stroke="#0760A4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg></div><div><div class="tt">Envío a domicilio</div><div class="ds">Registrar y calcular el costo de un envío al cliente</div></div><div class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></div></div>
   <div class="mini">
     <div class="mcard" onclick="nav('medicos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 9V3M8 3h8"/></svg><div class="tt">Médicos</div><div class="ds">${medicos.length} cargados</div></div>
     <div class="mcard" onclick="nav('envios')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 2"/></svg><div class="tt">Mis envíos</div><div class="ds">${orders.filter(o=>o.sucursal===state.sucursal).length} recientes</div></div>
@@ -406,9 +536,7 @@ function renderPedido(){
       <div class="fld"><label class="lbl">Producto / Preparado</label><input class="inp" id="i-prod" placeholder="Ej: Minoxidil 5% loción" oninput="pedProdSugg()" autocomplete="off"><div id="prod-sugg" class="sugg-list" style="display:none"></div></div>
       <div class="fld"><div class="row2"><div><label class="lbl">Presentación</label><input class="inp" id="i-pres" placeholder="Frasco 100ml" autocomplete="off"></div><div><label class="lbl">Cantidad</label><input class="inp" id="i-cant" type="number" min="1" value="1"></div></div></div>
     </div>
-    <button class="btn-add" onclick="pedAdd()">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Agregar producto
-    </button>
+    <button class="btn" style="background:var(--green-l); color:var(--green); border: 2px dashed var(--green); margin-top: 5px;" onclick="pedAdd()">+ Agregar producto</button>
     <div class="group"><div class="fld"><label class="lbl">Observaciones (opcional)</label><textarea class="ta" id="i-obs" placeholder="Notas para el laboratorio…">${esc(w.obs)}</textarea></div></div>`;
   } else {
     const u=URG[w.urgencia];
@@ -516,99 +644,120 @@ async function guardarReceta(){const w=state.wrec;
   toast('Receta enviada al laboratorio ✓');nav('envios');}
 
 /* médico: alta / edición */
-let _medEdit=null;
-function recNuevoMed(){openMedForm(null);}
-function openMedForm(id){_medEdit=id;const m=id?medicos.find(x=>x.id===id):null;
-  $('#dwc').innerHTML=`<div class="dwh"><h3>${m?'Editar médico':'Cargar médico nuevo'}</h3><button class="xbtn" onclick="closeDw()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-  <div class="dwb"><div class="group">
-    <div class="fld"><label class="lbl">Nombre y apellido</label><input class="inp" id="nm-nom" value="${esc(m?m.nombre:'')}" placeholder="Dr/a. …"></div>
-    <div class="fld"><label class="lbl">Especialidad</label><input class="inp" id="nm-esp" value="${esc(m?(m.esp||''):'')}" placeholder="Dermatología"></div>
-    <div class="fld"><label class="lbl">Matrícula Nacional (MN) — opcional</label><input class="inp" id="nm-mn" value="${esc(m?(m.mn||''):'')}" placeholder="ej: 112233"></div>
-    <div class="fld"><div class="row2"><div><label class="lbl">Matrícula Provincial (MP) — opcional</label><input class="inp" id="nm-mp" value="${esc(m?(m.mp||''):'')}" placeholder="ej: 87654"></div><div><label class="lbl">Provincia</label><div class="selwrap"><select class="sel" id="nm-prov">${PROVINCIAS.map(pr=>`<option ${m&&m.provincia===pr?'selected':''}>${pr}</option>`).join('')}</select></div></div></div></div>
-  </div><button class="btn btn-primary" onclick="saveMed()">Guardar médico</button></div>`;
-  $('#ov').classList.add('on');gsap.to('#dw',{y:0,x:'-50%',duration:.4,ease:'power3.out'});
-}
-
-async function saveMed(){const nom=$('#nm-nom').value.trim();if(!nom){toast('Falta el nombre');return;};
+function recNuevoMed(){state.wrec=state.wrec||{};state.wrec.newMedForm=true;render();}
+async function saveMed(){const nom=$('#nm-nom').value.trim();if(!nom){toast('Falta el nombre');return;}
   const mn=$('#nm-mn').value.trim(),mp=$('#nm-mp').value.trim();
   const data={nombre:nom,esp:$('#nm-esp').value.trim(),mn,mp,provincia:mp?$('#nm-prov').value:'',tipoMat:mn&&mp?'Ambas':mp?'MP':'MN'};
   let m;if(_medEdit){m=medicos.find(x=>x.id===_medEdit);Object.assign(m,data);}else{m={id:uid(),...data,creado:Date.now()};medicos.push(m);}
-  await Store.setJSON(K.MED,medicos);closeDw();toast(_medEdit?'Médico actualizado ✓':'Médico cargado ✓');
-  if(state.screen==='receta'&&!_medEdit){state.wrec.medicoId=m.id;state.wrec.step=2;}render();}
+  const wasRec=state.screen==='receta'&&state.wrec?.newMedForm;
+  await Store.setJSON(K.MED,medicos);state.medEdit=null;
+  if(wasRec){state.wrec.newMedForm=false;state.wrec.medicoId=m.id;state.wrec.step=2;}else toast((state.medEdit===null?'Médico':'')+'Médico guardado ✓');
+  render();}
 
 /* ===== CONFIGURACIÓN (admin) ===== */
 function bldIcon(){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13M9 21v-6h6v6"/></svg>';}
+function sucForm(id){const s=id?sucursalesList.find(x=>x.id===id):null;const noEnv=s&&!orders.some(o=>o.sucursal===s.nombre);
+  return `<div class="${s?'irow-form':'irow-form-new'}"><div class="group">
+    <div class="fld"><label class="lbl">Nombre de la sucursal</label><input class="inp" id="s-nom" value="${esc(s?s.nombre:'')}" placeholder="Ej: Sucursal Haedo"></div>
+    <div class="fld"><label class="lbl">Dirección (para cálculo de envíos)</label><input class="inp" id="s-dir" value="${esc(s?s.direccion||'':'')}" placeholder="Rivadavia 1234, Haedo, Buenos Aires"></div>
+    ${s?`<div class="fld"><label class="lbl">Estado</label><br><button class="pill ${s.activa?'on':''}" id="s-act" data-v="${s.activa?'1':'0'}" onclick="this.dataset.v=this.dataset.v==='0'?'1':'0';this.classList.toggle('on');this.textContent=this.classList.contains('on')?'Activa':'Inactiva'">${s.activa?'Activa':'Inactiva'}</button></div>`:''}
+  </div><div class="form-actions"><button class="btn btn-primary" style="flex:1" onclick="saveSuc()">Guardar</button><button class="btn-cancel" onclick="state.sucEdit=null;render()">Cancelar</button></div>
+  ${s&&noEnv?`<button class="btn-add" style="background:#FBE9E6;color:var(--red);box-shadow:none;margin-top:8px" onclick="delSuc('${s.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Eliminar sucursal</button>`:''}
+  </div>`;
+}
 function renderCfgSuc(){
-  return `<div class="h1">Sucursales</div><div class="sub">Activá o desactivá sucursales. No se borran si tienen envíos: se conserva el historial.</div>
-  ${sucursalesList.map(s=>{const n=orders.filter(o=>o.sucursal===s.nombre).length;return `<div class="medc" onclick="openSucForm('${s.id}')"><div class="ic">${bldIcon()}</div><div><div class="nm">${esc(s.nombre)}</div><div class="mat">${n} envío${n!==1?'s':''}</div></div><button class="pill ${s.activa?'on':''}" onclick="event.stopPropagation();toggleSuc('${s.id}')">${s.activa?'Activa':'Inactiva'}</button></div>`;}).join('')}
-  <button class="btn-add" onclick="openSucForm(null)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Nueva sucursal</button>`;
+  return `<div class="h1">Sucursales</div><div class="sub">Tocá una sucursal para editar sus datos.</div>
+  ${sucursalesList.map(s=>{const n=orders.filter(o=>o.sucursal===s.nombre).length;const isO=state.sucEdit===s.id;
+    return `<div class="medc${isO?' irow-open':''}" onclick="xEdit('sucEdit','${s.id}')"><div class="ic">${bldIcon()}</div><div><div class="nm">${esc(s.nombre)}</div><div class="mat">${n} envío${n!==1?'s':''}${s.direccion?' · '+esc(s.direccion):''}</div></div><span class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="${isO?'M18 6 6 18M6 6l12 12':'m9 18 6-6-6-6'}"/></svg></span></div>
+    ${isO?sucForm(s.id):''}`;
+  }).join('')}
+  ${state.sucEdit==='new'?sucForm(null):''}
+  <button class="btn-add" onclick="xEdit('sucEdit','new')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Nueva sucursal</button>`;
 }
-let _sucEdit=null;
-function openSucForm(id){_sucEdit=id;const s=id?sucursalesList.find(x=>x.id===id):null;
-  $('#dwc').innerHTML=`<div class="dwh"><h3>${s?'Editar sucursal':'Nueva sucursal'}</h3><button class="xbtn" onclick="closeDw()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-  <div class="dwb"><div class="group"><div class="fld"><label class="lbl">Nombre de la sucursal</label><input class="inp" id="s-nom" value="${esc(s?s.nombre:'')}" placeholder="Ej: Sucursal Haedo"></div>${s?`<div class="fld"><label class="lbl">Estado</label><br><button class="pill ${s.activa?'on':''}" id="s-act" data-v="${s.activa?'1':'0'}" onclick="this.dataset.v=this.dataset.v==='0'?'1':'0';this.classList.toggle('on');this.textContent=this.classList.contains('on')?'Activa':'Inactiva'">${s.activa?'Activa':'Inactiva'}</button></div>`:''}</div><button class="btn btn-primary" onclick="saveSuc()">Guardar</button>${s&&!orders.some(o=>o.sucursal===s.nombre)?`<button class="btn-add" style="background:#FBE9E6;color:var(--red);box-shadow:none" onclick="delSuc('${id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Eliminar sucursal</button>`:''}</div>`;
-  $('#ov').classList.add('on');gsap.to('#dw',{y:0,x:'-50%',duration:.4,ease:'power3.out'});}
 async function saveSuc(){const nom=$('#s-nom').value.trim();if(!nom){toast('Falta el nombre');return;}
-  if(_sucEdit){const s=sucursalesList.find(x=>x.id===_sucEdit);s.nombre=nom;const a=$('#s-act');if(a)s.activa=a.dataset.v==='1';}
-  else sucursalesList.push({id:uid(),nombre:nom,activa:true});
-  await Store.setJSON(K.SUC,sucursalesList);closeDw();toast('Sucursal guardada ✓');render();}
+  const dir=$('#s-dir').value.trim();const id=state.sucEdit==='new'?null:state.sucEdit;
+  if(id){const s=sucursalesList.find(x=>x.id===id);const dc=s.direccion!==dir;s.nombre=nom;s.direccion=dir;if(dc){s.lat=null;s.lon=null;}const a=$('#s-act');if(a)s.activa=a.dataset.v==='1';}
+  else sucursalesList.push({id:uid(),nombre:nom,direccion:dir,activa:true,lat:null,lon:null});
+  await Store.setJSON(K.SUC,sucursalesList);state.sucEdit=null;toast('Sucursal guardada ✓');render();}
 async function toggleSuc(id){const s=sucursalesList.find(x=>x.id===id);s.activa=!s.activa;await Store.setJSON(K.SUC,sucursalesList);render();}
-async function delSuc(id){const s=sucursalesList.find(x=>x.id===id);if(orders.some(o=>o.sucursal===s.nombre)){toast('Tiene envíos: solo se puede desactivar');return;}sucursalesList=sucursalesList.filter(x=>x.id!==id);await Store.setJSON(K.SUC,sucursalesList);closeDw();toast('Sucursal eliminada');render();}
+async function delSuc(id){const s=sucursalesList.find(x=>x.id===id);if(orders.some(o=>o.sucursal===s.nombre)){toast('Tiene envíos: solo se puede desactivar');return;}sucursalesList=sucursalesList.filter(x=>x.id!==id);await Store.setJSON(K.SUC,sucursalesList);state.sucEdit=null;toast('Sucursal eliminada');render();}
 
-function renderCfgVend(){
-  return `<div class="h1">Vendedores</div><div class="sub">Quién carga pedidos en el mostrador. Los inactivos no aparecen para envíos nuevos.</div>
-  ${vendedoresList.map(v=>`<div class="medc" onclick="openVendForm('${v.id}')"><div class="ic" style="background:${avc(v.nombre)};color:#fff;font-weight:700">${inicial(v.nombre)}</div><div><div class="nm">${esc(v.nombre)}</div><div class="mat">${esc(v.sucursal||'—')}</div></div><button class="pill ${v.activo?'on':''}" onclick="event.stopPropagation();toggleVend('${v.id}')">${v.activo?'Activo':'Inactivo'}</button></div>`).join('')}
-  <button class="btn-add" onclick="openVendForm(null)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Nuevo vendedor</button>`;
-}
-let _vendEdit=null;
-function openVendForm(id){_vendEdit=id;const v=id?vendedoresList.find(x=>x.id===id):null;
-  $('#dwc').innerHTML=`<div class="dwh"><h3>${v?'Editar vendedor':'Nuevo vendedor'}</h3><button class="xbtn" onclick="closeDw()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-  <div class="dwb"><div class="group">
-    <div class="fld"><label class="lbl">Nombre</label><input class="inp" id="v-nom" value="${esc(v?v.nombre:'')}" placeholder="Ej: Sofía"></div>
+function vendForm(id){const v=id?vendedoresList.find(x=>x.id===id):null;const noEnv=v&&!orders.some(o=>o.vendedor===v.nombre);
+  return `<div class="${v?'irow-form':'irow-form-new'}"><div class="group">
+    <div class="fld"><label class="lbl">Nombre</label><input class="inp" id="v-nom" value="${esc(v?v.nombre:'')}" placeholder="Ej: Carla"></div>
     <div class="fld"><label class="lbl">Sucursal asignada</label><div class="selwrap"><select class="sel" id="v-suc">${sucursalesList.map(s=>`<option ${v&&v.sucursal===s.nombre?'selected':''}>${esc(s.nombre)}</option>`).join('')}</select></div></div>
     ${v?`<div class="fld"><label class="lbl">Estado</label><br><button class="pill ${v.activo?'on':''}" id="v-act" data-v="${v.activo?'1':'0'}" onclick="this.dataset.v=this.dataset.v==='0'?'1':'0';this.classList.toggle('on');this.textContent=this.classList.contains('on')?'Activo':'Inactivo'">${v.activo?'Activo':'Inactivo'}</button></div>`:''}
-  </div><button class="btn btn-primary" onclick="saveVend()">Guardar</button>${v&&!orders.some(o=>o.vendedor===v.nombre)?`<button class="btn-add" style="background:#FBE9E6;color:var(--red);box-shadow:none" onclick="delVend('${id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Eliminar vendedor</button>`:''}</div>`;
-  $('#ov').classList.add('on');gsap.to('#dw',{y:0,x:'-50%',duration:.4,ease:'power3.out'});}
-async function saveVend(){const nom=$('#v-nom').value.trim();if(!nom){toast('Falta el nombre');return;}const suc=$('#v-suc').value;
-  if(_vendEdit){const v=vendedoresList.find(x=>x.id===_vendEdit);v.nombre=nom;v.sucursal=suc;const a=$('#v-act');if(a)v.activo=a.dataset.v==='1';}
-  else vendedoresList.push({id:uid(),nombre:nom,sucursal:suc,activo:true});
-  await Store.setJSON(K.VEND,vendedoresList);closeDw();toast('Vendedor guardado ✓');render();}
-async function toggleVend(id){const v=vendedoresList.find(x=>x.id===id);v.activo=!v.activo;await Store.setJSON(K.VEND,vendedoresList);render();}
-async function delVend(id){const v=vendedoresList.find(x=>x.id===id);if(orders.some(o=>o.vendedor===v.nombre)){toast('Tiene envíos: solo se puede desactivar');return;}vendedoresList=vendedoresList.filter(x=>x.id!==id);await Store.setJSON(K.VEND,vendedoresList);closeDw();toast('Vendedor eliminado');render();}
-/* ===== USUARIOS (login + roles) ===== */
-function renderCfgUsers(){
-  return `<div class="h1">Usuarios</div><div class="sub">Quién entra al sistema y con qué permisos. Los inactivos no pueden iniciar sesión.</div>
-  ${usuarios.map(u=>`<div class="medc" onclick="openUserForm('${u.id}')"><div class="ic" style="background:${avc(u.nombre)};color:#fff;font-weight:700">${inicial(u.nombre)}</div><div><div class="nm">${esc(u.nombre)}</div><div class="mat">${ROLES[u.rol]}${u.sucursal?' · '+esc(u.sucursal):''}</div></div><button class="pill ${u.activo?'on':''}" onclick="event.stopPropagation();toggleUser('${u.id}')">${u.activo?'Activo':'Inactivo'}</button></div>`).join('')}
-  <button class="btn-add" onclick="openUserForm(null)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Nuevo usuario</button>`;
+  </div><div class="form-actions"><button class="btn btn-primary" style="flex:1" onclick="saveVend()">Guardar</button><button class="btn-cancel" onclick="state.vendEdit=null;render()">Cancelar</button></div>
+  ${noEnv?`<button class="btn-add" style="background:#FBE9E6;color:var(--red);box-shadow:none;margin-top:8px" onclick="delVend('${v.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Eliminar vendedor</button>`:''}
+  </div>`;
 }
-let _userEdit=null;
-function openUserForm(id){_userEdit=id;const u=id?usuarios.find(x=>x.id===id):null;
+function renderCfgVend(){
+  return `<div class="h1">Vendedores</div><div class="sub">Tocá uno para editar. Los inactivos no aparecen en selección de pedidos.</div>
+  ${vendedoresList.map(v=>{const isO=state.vendEdit===v.id;
+    return `<div class="medc${isO?' irow-open':''}" onclick="xEdit('vendEdit','${v.id}')"><div class="ic" style="background:${avc(v.nombre)};color:#fff;font-weight:700">${inicial(v.nombre)}</div><div><div class="nm">${esc(v.nombre)}</div><div class="mat">${esc(v.sucursal||'—')}</div></div><span class="chip ${v.activo?'c-listo':'c-rech'}">${v.activo?'Activo':'Inactivo'}</span></div>
+    ${isO?vendForm(v.id):''}`;
+  }).join('')}
+  ${state.vendEdit==='new'?vendForm(null):''}
+  <button class="btn-add" onclick="xEdit('vendEdit','new')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Nuevo vendedor</button>`;
+}
+async function saveVend(){const nom=$('#v-nom').value.trim();if(!nom){toast('Falta el nombre');return;}const suc=$('#v-suc').value;
+  const id=state.vendEdit==='new'?null:state.vendEdit;
+  if(id){const v=vendedoresList.find(x=>x.id===id);v.nombre=nom;v.sucursal=suc;const a=$('#v-act');if(a)v.activo=a.dataset.v==='1';}
+  else vendedoresList.push({id:uid(),nombre:nom,sucursal:suc,activo:true});
+  await Store.setJSON(K.VEND,vendedoresList);state.vendEdit=null;toast('Vendedor guardado ✓');render();}
+async function toggleVend(id){const v=vendedoresList.find(x=>x.id===id);v.activo=!v.activo;await Store.setJSON(K.VEND,vendedoresList);render();}
+async function delVend(id){const v=vendedoresList.find(x=>x.id===id);if(orders.some(o=>o.vendedor===v.nombre)){toast('Tiene envíos: solo se puede desactivar');return;}vendedoresList=vendedoresList.filter(x=>x.id!==id);state.vendEdit=null;toast('Vendedor eliminado');render();}
+/* ===== USUARIOS (login + roles) ===== */
+function userForm(id){const u=id?usuarios.find(x=>x.id===id):null;
   const roles=[['farmacia','Farmacéutico'],['laboratorio','Laboratorio'],['admin','Administrador']];
   const esMi=u&&state.session&&state.session.id===u.id;
   const ultimoAdmin=u&&u.rol==='admin'&&usuarios.filter(x=>x.rol==='admin'&&x.activo).length<=1;
-  $('#dwc').innerHTML=`<div class="dwh"><h3>${u?'Editar usuario':'Nuevo usuario'}</h3><button class="xbtn" onclick="closeDw()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-  <div class="dwb"><div class="group">
+  return `<div class="${u?'irow-form':'irow-form-new'}"><div class="group">
     <div class="fld"><label class="lbl">Nombre</label><input class="inp" id="u-nom" value="${esc(u?u.nombre:'')}" placeholder="Ej: Carla"></div>
     <div class="fld"><label class="lbl">Rol</label><div class="selwrap"><select class="sel" id="u-rol">${roles.map(r=>`<option value="${r[0]}" ${u&&u.rol===r[0]?'selected':''}>${r[1]}</option>`).join('')}</select></div></div>
     <div class="fld"><label class="lbl">Sucursal (para farmacéuticos)</label><div class="selwrap"><select class="sel" id="u-suc"><option value="">— No aplica —</option>${sucursalesList.map(s=>`<option ${u&&u.sucursal===s.nombre?'selected':''}>${esc(s.nombre)}</option>`).join('')}</select></div></div>
     <div class="fld"><label class="lbl">PIN de acceso</label><input class="inp" id="u-pin" type="text" inputmode="numeric" value="${esc(u?u.pin:'')}" placeholder="4 a 8 dígitos"></div>
     ${u&&!esMi&&!ultimoAdmin?`<div class="fld"><label class="lbl">Estado</label><br><button class="pill ${u.activo?'on':''}" id="u-act" data-v="${u.activo?'1':'0'}" onclick="this.dataset.v=this.dataset.v==='0'?'1':'0';this.classList.toggle('on');this.textContent=this.classList.contains('on')?'Activo':'Inactivo'">${u.activo?'Activo':'Inactivo'}</button></div>`:''}
-  </div><button class="btn btn-primary" onclick="saveUser()">Guardar</button>${u&&!esMi&&!ultimoAdmin?`<button class="btn-add" style="background:#FBE9E6;color:var(--red);box-shadow:none" onclick="delUser('${id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Eliminar usuario</button>`:''}</div>`;
-  $('#ov').classList.add('on');gsap.to('#dw',{y:0,x:'-50%',duration:.4,ease:'power3.out'});}
+  </div><div class="form-actions"><button class="btn btn-primary" style="flex:1" onclick="saveUser()">Guardar</button><button class="btn-cancel" onclick="state.userEdit=null;render()">Cancelar</button></div>
+  ${u&&!esMi&&!ultimoAdmin?`<button class="btn-add" style="background:#FBE9E6;color:var(--red);box-shadow:none;margin-top:8px" onclick="delUser('${u.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Eliminar usuario</button>`:''}
+  </div>`;
+}
+function renderCfgUsers(){
+  return `<div class="h1">Usuarios</div><div class="sub">Tocá un usuario para editar sus datos y permisos.</div>
+  ${usuarios.map(u=>{const isO=state.userEdit===u.id;
+    return `<div class="medc${isO?' irow-open':''}" onclick="xEdit('userEdit','${u.id}')"><div class="ic" style="background:${avc(u.nombre)};color:#fff;font-weight:700">${inicial(u.nombre)}</div><div><div class="nm">${esc(u.nombre)}</div><div class="mat">${ROLES[u.rol]}${u.sucursal?' · '+esc(u.sucursal):''}</div></div><span class="chip ${u.activo?'c-listo':'c-rech'}">${u.activo?'Activo':'Inactivo'}</span></div>
+    ${isO?userForm(u.id):''}`;
+  }).join('')}
+  ${state.userEdit==='new'?userForm(null):''}
+  <button class="btn-add" onclick="xEdit('userEdit','new')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Nuevo usuario</button>`;
+}
 async function saveUser(){const nom=$('#u-nom').value.trim();const rol=$('#u-rol').value;const suc=$('#u-suc').value||null;const pin=$('#u-pin').value.trim();
   if(!nom){toast('Falta el nombre');return;}
   if(!/^\d{4,8}$/.test(pin)){toast('El PIN debe tener 4 a 8 dígitos');return;}
-  const sucFinal=rol==='farmacia'?suc:null;
-  if(_userEdit){const u=usuarios.find(x=>x.id===_userEdit);u.nombre=nom;u.rol=rol;u.sucursal=sucFinal;u.pin=pin;const a=$('#u-act');if(a)u.activo=a.dataset.v==='1';if(state.session&&state.session.id===u.id){state.session=u;}}
+  const sucFinal=rol==='farmacia'?suc:null;const id=state.userEdit==='new'?null:state.userEdit;
+  if(id){const u=usuarios.find(x=>x.id===id);u.nombre=nom;u.rol=rol;u.sucursal=sucFinal;u.pin=pin;const a=$('#u-act');if(a)u.activo=a.dataset.v==='1';if(state.session&&state.session.id===u.id)state.session=u;}
   else usuarios.push({id:uid(),nombre:nom,usuario:nom.toLowerCase().replace(/\s+/g,''),pin:pin,rol:rol,sucursal:sucFinal,activo:true});
-  await Store.setJSON(K.USERS,usuarios);closeDw();toast('Usuario guardado ✓');render();}
+  await Store.setJSON(K.USERS,usuarios);state.userEdit=null;toast('Usuario guardado ✓');render();}
 async function toggleUser(id){const u=usuarios.find(x=>x.id===id);if(u.activo&&u.rol==='admin'&&usuarios.filter(x=>x.rol==='admin'&&x.activo).length<=1){toast('Debe quedar al menos un admin activo');return;}u.activo=!u.activo;await Store.setJSON(K.USERS,usuarios);render();}
-async function delUser(id){if(state.session&&state.session.id===id){toast('No podés eliminar tu propio usuario');return;}const u=usuarios.find(x=>x.id===id);if(u.rol==='admin'&&usuarios.filter(x=>x.rol==='admin'&&x.activo).length<=1){toast('Debe quedar al menos un admin');return;}usuarios=usuarios.filter(x=>x.id!==id);await Store.setJSON(K.USERS,usuarios);closeDw();toast('Usuario eliminado');render();}
+async function delUser(id){if(state.session&&state.session.id===id){toast('No podés eliminar tu propio usuario');return;}const u=usuarios.find(x=>x.id===id);if(u.rol==='admin'&&usuarios.filter(x=>x.rol==='admin'&&x.activo).length<=1){toast('Debe quedar al menos un admin');return;}usuarios=usuarios.filter(x=>x.id!==id);state.userEdit=null;toast('Usuario eliminado');render();}
 
+function medForm(id,cancelFn){const m=id?medicos.find(x=>x.id===id):null;
+  const cf=cancelFn||`state.medEdit=null;render()`;
+  return `<div class="${m?'irow-form':'irow-form-new'}"><div class="group">
+    <div class="fld"><label class="lbl">Nombre y apellido</label><input class="inp" id="nm-nom" value="${esc(m?m.nombre:'')}" placeholder="Dr/a. …"></div>
+    <div class="fld"><label class="lbl">Especialidad</label><input class="inp" id="nm-esp" value="${esc(m?m.esp||'':'')}" placeholder="Dermatología"></div>
+    <div class="fld"><label class="lbl">Matrícula Nacional (MN) — opcional</label><input class="inp" id="nm-mn" value="${esc(m?m.mn||'':'')}" placeholder="ej: 112233"></div>
+    <div class="fld"><div class="row2"><div><label class="lbl">Matrícula Provincial (MP) — opcional</label><input class="inp" id="nm-mp" value="${esc(m?m.mp||'':'')}" placeholder="ej: 87654"></div><div><label class="lbl">Provincia</label><div class="selwrap"><select class="sel" id="nm-prov">${PROVINCIAS.map(pr=>`<option ${m&&m.provincia===pr?'selected':''}>${pr}</option>`).join('')}</select></div></div></div></div>
+  </div><div class="form-actions"><button class="btn btn-primary" style="flex:1" onclick="saveMed()">Guardar médico</button><button class="btn-cancel" onclick="${cf}">Cancelar</button></div></div>`;
+}
 function renderCfgMed(){
-  return `<div class="h1">Médicos</div><div class="sub">${medicos.length} cargados · compartidos entre sucursales. Tocá uno para editar.</div>
-  ${medicos.map(m=>`<div class="medc" onclick="openMedForm('${m.id}')"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 9V3M8 3h8"/></svg></div><div><div class="nm">${esc(m.nombre)}</div><div class="esp">${esc(m.esp||'')}</div><div class="mat"><span class="badge">${m.tipoMat}</span>${esc(medMat(m))}</div></div><span class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></span></div>`).join('')||'<div class="empty"><div class="t">Sin médicos</div></div>'}
-  <button class="btn-add" onclick="openMedForm(null)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Cargar médico nuevo</button>`;
+  return `<div class="h1">Médicos</div><div class="sub">Tocá uno para editar. Compartidos entre sucursales.</div>
+  ${medicos.map(m=>{const isO=state.medEdit===m.id;
+    return `<div class="medc${isO?' irow-open':''}" onclick="xEdit('medEdit','${m.id}')"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 9V3M8 3h8"/></svg></div><div><div class="nm">${esc(m.nombre)}</div><div class="esp">${esc(m.esp||'')}</div><div class="mat">${esc(medMat(m))}</div></div><span class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="${isO?'M18 6 6 18M6 6l12 12':'m9 18 6-6-6-6'}"/></svg></span></div>
+    ${isO?medForm(m.id):''}`;
+  }).join('')||'<div class="empty"><div class="t">Sin médicos</div></div>'}
+  ${state.medEdit==='new'?medForm(null):''}
+  <button class="btn-add" onclick="xEdit('medEdit','new')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Cargar médico nuevo</button>`;
 }
 
 function renderCfgFarma(){
@@ -620,7 +769,7 @@ function renderCfgFarma(){
   </div>
   <button class="btn btn-primary" onclick="saveFarma()">Guardar cambios</button>`;
 }
-async function saveFarma(){config.nombre=$('#cf-nom').value.trim()||config.nombre;config.color=$('#cf-col').value;await Store.setJSON(K.CFG,config);applyConfig();toast('Datos guardados ✓');render();}
+async function saveFarma(){config.nombre=$('#cf-nom').value.trim()||config.nombre;config.color=$('#cf-col').value;config.envio={tarifa_minima:+$('#cf-env-min').value||4000,radio_minimo_km:+$('#cf-env-km').value||3,tarifa_por_km:+$('#cf-env-tpkm').value||800};await Store.setJSON(K.CFG,config);applyConfig();toast('Datos guardados ✓');render();}
 
 /* ===== BACKUP / RESTAURACIÓN ===== */
 function renderCfgBackup(){
@@ -655,7 +804,7 @@ function renderCfgBackup(){
   <div class="group" style="border:1.5px solid var(--line);border-radius:14px;padding:14px 16px">
     <div style="font-weight:700;font-size:13.5px;margin-bottom:8px">♻️ Restaurar desde backup</div>
     <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">Si el archivo está cifrado, ingresá la contraseña arriba antes de restaurar.</div>
-    <label class="btn" style="display:inline-flex;align-items:center;gap:8px;width:auto;cursor:pointer;background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:none">
+    <label class="btn" style="display:inline-flex;align-items:center;gap:8px;width:auto;cursor:pointer;background:var(--card);color:var(--ink);border:1.5px solid var(--line);box-shadow:none">
       📂 Seleccionar archivo de backup
       <input type="file" accept=".json,.mgbak" style="display:none" onchange="importarBackup(this.files[0])">
     </label>
@@ -835,48 +984,7 @@ function orderDetailHTML(id){const o=orders.find(x=>x.id===id);if(!o)return '';
     +`<div class="secl">Seguimiento</div><div class="tl">${(o.hist||[]).slice().reverse().map(h=>`<div class="tli"><div class="a">${ESTADOS[h.estado]}${h.motivo?' · '+esc(h.motivo):''}</div><div class="b">${fmtDate(h.ts)} · ${esc(h.by)}</div></div>`).join('')}</div>`;
 }
 
-/* ===== DRAWER DETALLE ===== */
-async function openOrder(id){const o=orders.find(x=>x.id===id);if(!o)return;const isRec=o.tipo==='receta';
-  const p=isRec?pacientes.find(x=>x.id===o.pacienteId):null;const m=isRec?medicos.find(x=>x.id===o.medicoId):null;
-  const img=isRec?await Store.get(K.IMG(id)):null;const u=URG[o.urgencia]||URG.media;const isLab=state.role==='lab';
-  let act='';
-  if(isLab){
-    if(o.estado==='pendiente'){
-      act=`<div class="secl">Acción del laboratorio</div>
-        <button class="btn btn-primary" onclick="tomar('${id}')">Tomar pedido</button>
-        <div id="rejBox"><button class="btn btn-red" onclick="showRej()">Rechazar pedido</button></div>`;
-    } else if(o.estado==='rechazado'){
-      act=`<div class="secl">Estado</div><span class="chip rechazado">Rechazado</span>`;
-    } else {
-      act=`<div class="secl">Estado del preparado</div><div style="margin-bottom:10px"><span class="chip ${o.estado}">${ESTADOS[o.estado]}</span></div><div class="flow">${['en_preparacion','listo','entregado'].map(e=>`<button class="sbtn ${o.estado===e?'cur':''}" onclick="setEstado('${id}','${e}')">${ESTADOS[e]}</button>`).join('')}</div>`;
-    }
-  } else {
-    if(o.estado==='rechazado'){
-      act=`<div class="secl">Corregir y reenviar</div>
-        <div class="group"><div class="fld"><label class="lbl">Preparado / productos</label><input class="inp" id="fix-prod" value="${esc(resumen(o))}"></div>
-        <div class="fld"><label class="lbl">Observaciones</label><textarea class="ta" id="fix-obs">${esc(o.obs||'')}</textarea></div></div>
-        <button class="btn btn-primary" onclick="reenviar('${id}')">Reenviar al laboratorio</button>`;
-    } else {
-      act=`<div class="secl">Estado</div><span class="chip ${o.estado}">${ESTADOS[o.estado]}</span>`;
-    }
-  }
-  const productos = isRec ? `<div class="prepbox"><div class="pl">Preparado</div><div class="pt">${esc(o.prod)}</div></div><dl class="kv"><dt>Presentación</dt><dd>${esc(o.pres||'—')}</dd><dt>Cantidad</dt><dd>${o.cant||'—'}</dd></dl>`
-    : `<div class="secl">Productos</div>${(o.items||[]).map(it=>`<div class="prepbox" style="margin-bottom:8px"><div class="pt">${esc(it.producto)}</div><div style="font-size:13px;color:var(--gray)">${esc(it.presentacion||'')} · x${it.cantidad}</div></div>`).join('')}`;
-  $('#dwc').innerHTML=`<div class="dwh"><h3>${esc(codigo(o))}</h3><button class="xbtn" onclick="closeDw()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-  <div class="dwb">
-    <div class="ss" style="font-weight:700;color:var(--gray);margin-bottom:8px">${isRec?'Receta magistral':'Pedido de reposición'} · <span style="color:${u.c}">Urgencia ${u.l}</span></div>
-    ${o.estado==='rechazado'&&o.motivo?`<div class="reason"><b>Motivo del rechazo</b>${esc(o.motivo)}</div>`:''}
-    ${img?`<img class="dimg" src="${img}">`:''}
-    ${productos}
-    ${o.obs?`<dl class="kv"><dt>Observaciones</dt><dd>${esc(o.obs)}</dd></dl>`:''}
-    ${isRec&&p?`<div class="secl">Paciente</div><dl class="kv"><dt>Nombre</dt><dd>${esc(p.nombre)}</dd><dt>DNI</dt><dd>${esc(p.dni||'—')}</dd><dt>Obra social</dt><dd>${esc(p.os||'—')}</dd></dl>`:''}
-    ${m?`<div class="secl">Médico</div><dl class="kv"><dt>Nombre</dt><dd>${esc(m.nombre)}</dd><dt>Matrícula</dt><dd>${esc(medMat(m))}</dd><dt>Especialidad</dt><dd>${esc(m.esp||'—')}</dd></dl>`:''}
-    <div class="secl">Origen</div><dl class="kv"><dt>Sucursal</dt><dd>${esc(o.sucursal)}</dd><dt>Vendedor</dt><dd>${esc(o.vendedor)}</dd><dt>Enviado</dt><dd>${fmtDate(o.creado)}</dd></dl>
-    ${act}
-    <div class="secl">Seguimiento</div><div class="tl">${(o.hist||[]).slice().reverse().map(h=>`<div class="tli"><div class="a">${ESTADOS[h.estado]}${h.motivo?' · '+esc(h.motivo):''}</div><div class="b">${fmtDate(h.ts)} · ${esc(h.by)}</div></div>`).join('')}</div>
-  </div>`;
-  $('#ov').classList.add('on');gsap.to('#dw',{y:0,x:'-50%',duration:.4,ease:'power3.out'});gsap.fromTo('.dwb > *',{y:14,opacity:0},{y:0,opacity:1,duration:.3,stagger:.03,delay:.12});
-}
+/* orderDetail -> see orderDetailHTML() + toggleOrder() (accordion) */
 function closeDw(){gsap.to('#dw',{y:'100%',x:'-50%',duration:.3,ease:'power2.in',onComplete:()=>$('#ov').classList.remove('on')});}
 function showRej(id){document.getElementById('rejBox').innerHTML=`<div class="group"><div class="fld"><label class="lbl">Motivo del rechazo</label><textarea class="ta" id="rej-motivo" placeholder="Ej: falta dosis, ilegible, sin stock de droga…"></textarea></div></div><button class="btn btn-red" onclick="rechazar('${id}')">Confirmar rechazo</button>`;}
 async function _save(){await Store.setJSON(K.ORD,orders);}
@@ -893,7 +1001,7 @@ async function reenviar(id){const o=orders.find(x=>x.id===id);const prod=$('#fix
 function renderMedicos(){
   return `<div class="h1">Médicos</div><div class="sub">${medicos.length} cargados · compartidos entre sucursales</div>
   ${medicos.map(m=>{const n=orders.filter(o=>o.medicoId===m.id).length;return `<div class="medc"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 9V3M8 3h8"/></svg></div><div><div class="nm">${esc(m.nombre)}</div><div class="esp">${esc(m.esp||'')}</div><div class="mat"><span class="badge">${m.tipoMat}</span>${esc(medMat(m))}</div></div><span class="ch" style="font-weight:700;color:var(--green);font-size:13px">${n} rec.</span></div>`;}).join('')||'<div class="empty"><div class="t">Sin médicos</div></div>'}
-  ${state.role==='farma'?`<button class="btn-add" onclick="recNuevoMed()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Cargar médico nuevo</button>`:''}`;
+  ${state.role==='farma'?state.wrec?.newMedForm?medForm(null,`state.wrec.newMedForm=false;render()`):`<button class="btn-add" onclick="recNuevoMed()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Cargar médico nuevo</button>`:''}`;
 }
 function renderPacientes(){return `<div class="h1">Pacientes</div><div class="sub">${pacientes.length} registrados</div>${pacientes.map(p=>{const n=orders.filter(o=>o.pacienteId===p.id).length;return `<div class="medc"><div class="ic" style="background:${avc(p.nombre)};color:#fff;font-weight:700">${inicial(p.nombre)}</div><div><div class="nm">${esc(p.nombre)}</div><div class="mat">DNI ${esc(p.dni||'—')} · ${esc(p.os||'s/cobertura')}</div></div><span class="ch" style="font-weight:700;color:var(--green);font-size:13px">${n} rec.</span></div>`;}).join('')||'<div class="empty"><div class="t">Sin pacientes</div></div>'}`;}
 
@@ -925,12 +1033,7 @@ function renderReportes(){
   })():''}`;
 }
 function inRange(ts){const d=new Date(ts);if(state.rep.desde&&d<new Date(state.rep.desde))return false;if(state.rep.hasta&&d>new Date(state.rep.hasta+'T23:59:59'))return false;return true;}
-function verMedico(id){const m=medicos.find(x=>x.id===id);const rs=orders.filter(o=>o.tipo==='receta'&&o.medicoId===id&&inRange(o.creado));
-  $('#dwc').innerHTML=`<div class="dwh"><h3>${esc(m.nombre)}</h3><button class="xbtn" onclick="closeDw()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-  <div class="dwb"><div class="mat" style="margin-bottom:14px"><span class="badge">${m.tipoMat}</span>${esc(medMat(m))} · ${esc(m.esp||'')}</div>
-  <div class="secl">${rs.length} receta${rs.length!==1?'s':''} en el período</div>
-  ${rs.map(o=>{const p=pacientes.find(x=>x.id===o.pacienteId)||{};return `<div class="item" onclick="openOrder('${o.id}')"><div class="imain"><div class="tt">${esc(codigo(o))} · ${esc(o.prod)}</div><div class="ss">${esc(p.nombre||'—')} · ${fmtDate(o.creado)}</div></div><span class="chip ${o.estado}">${ESTADOS[o.estado]}</span></div>`;}).join('')||'<div class="ss">Sin recetas.</div>'}</div>`;
-  $('#ov').classList.add('on');gsap.to('#dw',{y:0,x:'-50%',duration:.4,ease:'power3.out'});}
+// verMedico replaced by inline doctor detail in renderReportes()
 function expReporte(){const recetas=orders.filter(o=>o.tipo==='receta'&&inRange(o.creado));
   const byMed={};recetas.forEach(o=>{const k=o.medicoId||'sin';byMed[k]=(byMed[k]||0)+1;});
   const rows=Object.entries(byMed).map(([id,n])=>{const m=medicos.find(x=>x.id===id);return{medico:m?m.nombre:'Sin médico',matricula:m?medMat(m):'',especialidad:m?m.esp:'',recetas:n};}).sort((a,b)=>b.recetas-a.recetas);
@@ -938,8 +1041,245 @@ function expReporte(){const recetas=orders.filter(o=>o.tipo==='receta'&&inRange(
   const csv=[cols.join(';'),...rows.map(r=>cols.map(c=>q(r[c])).join(';'))].join('\n');
   const u=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download='reporte_medicos.csv';a.click();toast('Reporte exportado ✓');}
 
+/* ===== DOMICILIOS ===== */
+const ENVIO_EST={pendiente:'Pendiente',en_camino:'En camino',entregado:'Entregado'};
+const ENVIO_COL={pendiente:'c-pend',en_camino:'c-acep',entregado:'c-listo'};
+function fmtPesos(n){return '$'+Math.round(n).toLocaleString('es-AR');}
+function haversine(la1,lo1,la2,lo2){const R=6371,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180;const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2;return +(R*2*Math.asin(Math.sqrt(a))).toFixed(2);}
+async function geocodeDom(addr){try{const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr+', Argentina')}&format=json&limit=1&accept-language=es`,{headers:{'User-Agent':'Magistral/1.0'}});const d=await r.json();return d.length?{lat:+d[0].lat,lon:+d[0].lon}:null;}catch{return null;}}
+function calcPrecioEnvio(km){const cfg=config.envio||{};const min=cfg.tarifa_minima||4000,radio=cfg.radio_minimo_km||3,tpkm=cfg.tarifa_por_km||800;return km<=radio?min:min+(km-radio)*tpkm;}
+
+function renderDomicilios(){
+  const t=state.domTab||'envios';
+  return `<div class="labtabs"><button class="ltab ${t==='envios'?'on':''}" onclick="state.domTab='envios';render()">📦 Envíos</button><button class="ltab ${t==='clientes'?'on':''}" onclick="state.domTab='clientes';render()">👥 Clientes</button></div>`
+    +(t==='envios'?renderEnviosList():renderClientesList());
+}
+function renderEnviosList(){
+  const f=state.domFilter||'todos';
+  const mine=state.role==='admin'?enviosDom:enviosDom.filter(e=>e.sucursal===state.sucursal);
+  const filt=f==='todos'?mine:mine.filter(e=>e.estado===f);
+  const cnt=v=>v==='todos'?mine.length:mine.filter(e=>e.estado===v).length;
+  const fb=(v,l)=>`<button class="fbtn ${f===v?'on':''}" onclick="state.domFilter='${v}';render()">${l} ${cnt(v)}</button>`;
+  return `<div class="h1">Envíos a domicilio</div><div class="sub">${state.role==='admin'?'Todos · todas las sucursales':'Sucursal '+state.sucursal}</div>
+  <div class="fr">${fb('todos','Todos')}${fb('pendiente','Pendientes')}${fb('en_camino','En camino')}${fb('entregado','Entregados')}</div>
+  ${filt.length?filt.map(e=>{const cl=clientesEnvio.find(c=>c.id===e.clienteId)||{};const isO=state.domOpenId===e.id;
+    return `<div class="item${isO?' open':''}" onclick="state.domOpenId=state.domOpenId==='${e.id}'?null:'${e.id}';render()">
+      <div class="iicon" style="font-size:20px;display:flex;align-items:center;justify-content:center">🛵</div>
+      <div class="imain"><div class="tt">${esc(e.codigo||'')} · ${esc(cl.nombre||'—')}</div><div class="ss">${esc(e.producto||'—')}</div>
+        <div class="ss">${esc(e.direccionDest||'—')}</div>
+        <div class="ss">${e.distancia_km?e.distancia_km+' km · ':''}<b>${fmtPesos(e.precio||0)}</b></div></div>
+      <div class="imeta"><span class="chip ${ENVIO_COL[e.estado]||''}">${ENVIO_EST[e.estado]}</span><span class="ss">${fmtDate(e.creado)}</span></div>
+    </div>${isO?`<div class="acc-detail">
+      <dl class="kv"><dt>Cliente</dt><dd>${esc(cl.nombre||'—')}</dd><dt>Teléfono</dt><dd>${esc(cl.telefono||'—')}</dd><dt>Dirección</dt><dd>${esc(e.direccionDest||'—')}</dd></dl>
+      ${e.distancia_km?`<dl class="kv"><dt>Distancia</dt><dd>${e.distancia_km} km (estimado línea recta)</dd><dt>Precio</dt><dd style="font-weight:800;font-size:18px;color:var(--green)">${fmtPesos(e.precio)}</dd></dl>`:''}
+      ${e.obs?`<dl class="kv"><dt>Notas</dt><dd>${esc(e.obs)}</dd></dl>`:''}
+      <dl class="kv"><dt>Sucursal</dt><dd>${esc(e.sucursal)}</dd><dt>Registrado por</dt><dd>${esc(e.by)}</dd></dl>
+      <div class="acc-act"><div class="secl">Estado del envío</div>
+        <div class="flow">${['pendiente','en_camino','entregado'].map(st=>`<button class="sbtn ${e.estado===st?'cur':''}" onclick="setEstadoEnvio('${e.id}','${st}')">${ENVIO_EST[st]}</button>`).join('')}</div></div>
+      <div class="secl">Historial</div><div class="tl">${(e.hist||[]).slice().reverse().map(h=>`<div class="tli"><div class="a">${ENVIO_EST[h.estado]||h.estado}</div><div class="b">${fmtDate(h.ts)} · ${esc(h.by)}</div></div>`).join('')}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <a href="https://maps.google.com/?q=${encodeURIComponent(e.direccionDest)}" target="_blank" class="btn-add" style="background:#0760A4;text-decoration:none">🗺️ Navegar</a>
+        <button class="btn-add" style="background:#1A6B3A" onclick="printEtiqueta('${e.id}')">🏷️ Imprimir etiqueta</button>
+      </div>
+    </div>`:''}`;
+  }).join(''):'<div class="empty"><div class="t">Sin envíos registrados</div></div>'}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:flex-start">
+    <button class="btn-add" onclick="xEdit('envNew',true)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Nuevo envío</button>
+    ${state.envNew?envioFormInline():''}
+  ${state.role==='admin'?`<button class="btn-add" style="background:#1A6B3A" onclick="exportEnviosCSV()">📊 Exportar envíos</button>`:''}
+  </div>`;
+}
+function cliForm(id){const c=id?clientesEnvio.find(x=>x.id===id):null;const noEnv=c&&!enviosDom.some(e=>e.clienteId===c.id);
+  return `<div class="${c?'irow-form':'irow-form-new'}"><div class="group">
+    <div class="fld"><label class="lbl">Nombre y apellido</label><input class="inp" id="cli-nom" value="${esc(c?c.nombre:'')}" placeholder="Juan García"></div>
+    <div class="fld"><label class="lbl">Teléfono</label><input class="inp" id="cli-tel" type="tel" value="${esc(c?c.telefono||'':'')}" placeholder="11 1234-5678"></div>
+    <div class="fld"><label class="lbl">Dirección habitual</label><input class="inp" id="cli-dir" value="${esc(c?c.direccion||'':'')}" placeholder="Rivadavia 1234, Haedo"></div>
+    <div class="fld"><label class="lbl">Notas</label><input class="inp" id="cli-obs" value="${esc(c?c.notas||'':'')}" placeholder="Depto, piso, referencias…"></div>
+  </div><div class="form-actions"><button class="btn btn-primary" style="flex:1" onclick="saveCliente()">Guardar cliente</button><button class="btn-cancel" onclick="state.cliEdit=null;render()">Cancelar</button></div>
+  ${noEnv?`<button class="btn-add" style="background:#FBE9E6;color:var(--red);box-shadow:none;margin-top:8px" onclick="delCliente('${c.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Eliminar</button>`:''}
+  </div>`;
+}
+function renderClientesList(){
+  return `<div class="h1">Clientes de domicilio</div><div class="sub">${clientesEnvio.length} clientes · compartidos entre sucursales. Tocá uno para editar.</div>
+  ${clientesEnvio.map(c=>{const isO=state.cliEdit===c.id;const ne=enviosDom.filter(e=>e.clienteId===c.id).length;
+    return `<div class="medc${isO?' irow-open':''}" onclick="xEdit('cliEdit','${c.id}')"><div class="ic" style="background:${avc(c.nombre)};color:#fff;font-weight:700">${inicial(c.nombre)}</div>
+      <div><div class="nm">${esc(c.nombre)}</div><div class="mat">📞 ${esc(c.telefono||'—')} · ${esc(c.direccion||'—')}</div></div>
+      <span class="ch" style="font-size:12px;font-weight:700;color:var(--green)">${ne} env.</span></div>
+    ${isO?cliForm(c.id):''}`;
+  }).join('')||'<div class="empty"><div class="t">Sin clientes cargados</div></div>'}
+  ${state.cliEdit==='new'?cliForm(null):''}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:flex-start">
+    <button class="btn-add" onclick="xEdit('cliEdit','new')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Nuevo cliente</button>
+    <button class="btn-add" style="background:#1A6B3A" onclick="exportClientesCSV()">📊 Exportar clientes</button>
+  </div>`;
+}
+
+let _envGeo={lat:null,lon:null,km:null,precio:null};
+function clearCalc(){_envGeo={lat:null,lon:null,km:null,precio:null};['#env-calc-result','#env-calc-warn'].forEach(id=>{const el=$(id);if(el)el.style.display='none';});}
+function toggleNuevoCliente(){const f=$('#env-nuevo-form');if(f)f.style.display=f.style.display==='none'?'block':'none';}
+function calcManual(){const km=+($('#env-km-manual')?.value||0);if(!km)return;const precio=calcPrecioEnvio(km);_envGeo.km=km;_envGeo.precio=precio;$('#env-calc-result').style.display='block';$('#env-dist').textContent=km+' km (manual)';$('#env-precio').textContent=fmtPesos(precio);}
+
+function envioFormInline(){
+  clearCalc();
+  return `<div class="irow-form-new">
+  <div class="group">
+    <div class="fld"><label class="lbl">Cliente registrado</label><div class="selwrap"><select class="sel" id="env-cli" onchange="autoFillDir()"><option value="">— Seleccioná o cargá nuevo —</option>${clientesEnvio.map(c=>`<option value="${c.id}" data-dir="${esc(c.direccion||'')}">${esc(c.nombre)}${c.telefono?' · '+c.telefono:''}</option>`).join('')}</select></div></div>
+    <button class="btn-add" style="background:#f4f6f4;color:var(--ink);box-shadow:none;margin-bottom:4px" onclick="toggleNuevoCliente()">+ Cargar cliente nuevo</button>
+    <div id="env-nuevo-form" style="display:none;background:#f8f9f8;border-radius:10px;padding:10px;margin-bottom:8px">
+      <div class="fld"><label class="lbl">Nombre</label><input class="inp" id="env-nom" placeholder="Nombre y apellido"></div>
+      <div class="fld"><label class="lbl">Teléfono</label><input class="inp" id="env-tel" type="tel" placeholder="11 1234-5678"></div>
+    </div>
+    <div class="fld"><label class="lbl">Dirección de entrega</label><input class="inp" id="env-dir" placeholder="Ej: Rivadavia 1234, Haedo" oninput="clearCalc()"></div>
+    <div class="fld"><label class="lbl">Producto / descripción</label><input class="inp" id="env-prod" placeholder="Ej: Crema magistral, receta"></div>
+    <div class="fld"><label class="lbl">Notas para el repartidor</label><input class="inp" id="env-obs" placeholder="Horario, piso, timbre, etc."></div>
+  </div>
+  <div id="env-calc-result" style="display:none;background:#EEF7EF;border:1.5px solid var(--green);border-radius:13px;padding:14px 16px;margin-bottom:12px">
+    <div style="font-size:12px;color:var(--muted)">Distancia estimada</div>
+    <div id="env-dist" style="font-weight:700;font-size:17px;color:var(--green);margin-bottom:4px"></div>
+    <div style="font-size:12px;color:var(--muted)">Costo del envío</div>
+    <div id="env-precio" style="font-weight:800;font-size:28px;color:var(--ink)"></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px">⚠️ Estimación en línea recta</div>
+  </div>
+  <div id="env-calc-warn" style="display:none" class="login-warn">No se pudo ubicar la dirección. Ingresá los km manualmente:<br><input class="inp" id="env-km-manual" type="number" min="0" step="0.1" placeholder="km" oninput="calcManual()"></div>
+  <button class="btn btn-ghost" onclick="calcEnvio()">📍 Calcular distancia y precio</button>
+  <div class="form-actions" style="margin-top:8px">
+    <button class="btn btn-primary" style="flex:1" onclick="saveEnvio()">Confirmar envío</button>
+    <button class="btn-cancel" onclick="state.envNew=false;render()">Cancelar</button>
+  </div></div>`;
+}
+// openEnvioForm replaced by envioFormInline()
+function autoFillDir(){const sel=$('#env-cli');if(!sel)return;const opt=sel.options[sel.selectedIndex];const dir=opt?.dataset?.dir;if(dir&&$('#env-dir'))$('#env-dir').value=dir;clearCalc();}
+
+async function calcEnvio(){
+  const dir=$('#env-dir')?.value.trim();if(!dir){toast('Ingresá la dirección primero');return;}
+  const btn=document.querySelector('#dw button.btn-ghost');if(btn)btn.textContent='⏳ Calculando…';
+  const suc=sucursalesList.find(s=>s.nombre===state.sucursal);
+  if(!suc?.direccion){if(btn)btn.textContent='📍 Calcular distancia y precio';toast('La sucursal no tiene dirección. Admin → Sucursales → editá la sucursal y agregá la dirección.');return;}
+  // Get/cache sucursal coords
+  let latO=suc.lat,lonO=suc.lon;
+  if(!latO){const g=await geocodeDom(suc.direccion);if(!g){if(btn)btn.textContent='📍 Calcular distancia y precio';toast('No se pudo ubicar la sucursal. Revisá la dirección en Admin → Sucursales.');return;}latO=g.lat;lonO=g.lon;suc.lat=latO;suc.lon=lonO;await Store.setJSON(K.SUC,sucursalesList);}
+  // Geocode client address
+  const geo=await geocodeDom(dir);
+  if(btn)btn.textContent='📍 Calcular distancia y precio';
+  if(!geo){$('#env-calc-warn').style.display='block';return;}
+  const km=haversine(+latO,+lonO,geo.lat,geo.lon);
+  const precio=calcPrecioEnvio(km);
+  _envGeo={lat:geo.lat,lon:geo.lon,km,precio};
+  $('#env-calc-result').style.display='block';
+  $('#env-dist').textContent=km+' km';
+  $('#env-precio').textContent=fmtPesos(precio);
+  $('#env-calc-warn').style.display='none';
+}
+
+async function saveEnvio(){
+  if(!_envGeo.precio&&!_envGeo.km){toast('Calculá la distancia y precio primero');return;}
+  const dir=$('#env-dir')?.value.trim();if(!dir){toast('Falta la dirección');return;}
+  let clienteId=$('#env-cli')?.value;
+  if(!clienteId){
+    const nom=$('#env-nom')?.value.trim();if(!nom){toast('Seleccioná un cliente o cargá uno nuevo');return;}
+    const nc={id:uid(),nombre:nom,telefono:$('#env-tel')?.value.trim()||'',direccion:dir,lat:_envGeo.lat,lon:_envGeo.lon,creado:Date.now(),activo:true};
+    clientesEnvio.push(nc);await Store.setJSON(K.CLI,clientesEnvio);clienteId=nc.id;
+  } else if(_envGeo.lat){
+    const cl=clientesEnvio.find(c=>c.id===clienteId);if(cl){cl.direccion=dir;cl.lat=_envGeo.lat;cl.lon=_envGeo.lon;await Store.setJSON(K.CLI,clientesEnvio);}
+  }
+  const by=state.session?.nombre||state.vendedor;
+  const seq=(config.envioSeq||0)+1;config.envioSeq=seq;await Store.setJSON(K.CFG,config);
+  const envio={id:uid(),codigo:'DOM-'+String(seq).padStart(4,'0'),clienteId,sucursal:state.sucursal,by,
+    direccionDest:dir,lat_dest:_envGeo.lat,lon_dest:_envGeo.lon,
+    distancia_km:_envGeo.km,precio:_envGeo.precio,
+    producto:$('#env-prod')?.value.trim()||'',obs:$('#env-obs')?.value.trim()||'',
+    estado:'pendiente',creado:Date.now(),hist:[{estado:'pendiente',ts:Date.now(),by}]};
+  enviosDom.push(envio);await Store.setJSON(K.ENV,enviosDom);
+  state.envNew=false;toast('Envío registrado ✓');render();
+}
+async function setEstadoEnvio(id,estado){const e=enviosDom.find(x=>x.id===id);if(!e||e.estado===estado)return;
+  const by=state.session?.nombre||state.vendedor;e.estado=estado;e.hist.push({estado,ts:Date.now(),by});
+  await Store.setJSON(K.ENV,enviosDom);toast(ENVIO_EST[estado]);render();}
+
+
+async function saveCliente(){const nom=$('#cli-nom')?.value.trim();if(!nom){toast('Falta el nombre');return;}
+  const id=state.cliEdit==='new'?null:state.cliEdit;
+  if(id){const c=clientesEnvio.find(x=>x.id===id);c.nombre=nom;c.telefono=$('#cli-tel')?.value.trim()||'';c.direccion=$('#cli-dir')?.value.trim()||'';c.notas=$('#cli-obs')?.value.trim()||'';}
+  else clientesEnvio.push({id:uid(),nombre:nom,telefono:$('#cli-tel')?.value.trim()||'',direccion:$('#cli-dir')?.value.trim()||'',notas:$('#cli-obs')?.value.trim()||'',creado:Date.now(),activo:true});
+  await Store.setJSON(K.CLI,clientesEnvio);state.cliEdit=null;toast('Cliente guardado ✓');render();}
+async function delCliente(id){clientesEnvio=clientesEnvio.filter(c=>c.id!==id);await Store.setJSON(K.CLI,clientesEnvio);state.cliEdit=null;toast('Cliente eliminado');render();}
+
+function _toCSV(rows){if(!rows.length)return '';const h=Object.keys(rows[0]);const q=v=>{v=String(v??'');return/[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};return[h.join(';'),...rows.map(r=>h.map(k=>q(r[k])).join(';'))].join('\n');}
+function printEtiqueta(id){
+  const e=enviosDom.find(x=>x.id===id);if(!e)return;
+  const cl=clientesEnvio.find(c=>c.id===e.clienteId)||{};
+  const farm=config.nombre||'Farmacia';
+  const fecha=new Date(e.creado).toLocaleDateString('es-AR');
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>Etiqueta ${e.codigo||''}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:#fff;display:flex;align-items:flex-start;justify-content:center;padding:8mm}
+.label{width:62mm;min-height:95mm;border:1px solid #000;padding:3.5mm;display:flex;flex-direction:column;gap:2.5mm}
+.lhead{border-bottom:1px solid #000;padding-bottom:2mm;margin-bottom:1mm}
+.farm{font-size:9pt;font-weight:900;letter-spacing:.03em}
+.sub{font-size:6.5pt;color:#444}
+.sec{display:flex;flex-direction:column;gap:1mm}
+.lbl{font-size:5.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#555}
+.val{font-size:10pt;font-weight:900;line-height:1.15}
+.phone{font-size:8.5pt;font-weight:700;margin-top:0.5mm}
+.addr{font-size:8pt;line-height:1.3}
+.prod{font-size:8pt;font-style:italic;line-height:1.3}
+.divider{border-top:1px dashed #999;margin:1mm 0}
+.foot{margin-top:auto;border-top:1px solid #000;padding-top:2mm;display:flex;flex-direction:column;gap:1mm}
+.fline{font-size:6.5pt;color:#333}
+.codigo{font-size:11pt;font-weight:900;font-family:'Courier New',monospace;letter-spacing:.05em}
+.noprint{background:#f0f4f0;padding:6px 10px;font-size:11px;font-family:Arial;color:#2F6933;font-weight:700;text-align:center;border-radius:6px;margin-bottom:8mm;max-width:62mm}
+@media print{
+  body{padding:0}
+  .noprint{display:none}
+  @page{margin:0;size:62mm 100mm}
+}
+</style></head>
+<body>
+<div>
+  <div class="noprint">🖨️ Imprimir → Tamaño de papel: 62×100mm · Sin márgenes</div>
+  <div class="label">
+    <div class="lhead">
+      <div class="farm">💊 ${farm.toUpperCase()}</div>
+      <div class="sub">Envío a domicilio · ${fecha}</div>
+    </div>
+    <div class="sec">
+      <div class="lbl">Para</div>
+      <div class="val">${cl.nombre||'—'}</div>
+      <div class="phone">📞 ${cl.telefono||'—'}</div>
+    </div>
+    <div class="sec">
+      <div class="lbl">Dirección de entrega</div>
+      <div class="addr">${e.direccionDest||'—'}</div>
+    </div>
+    <div class="divider"></div>
+    <div class="sec">
+      <div class="lbl">Contenido</div>
+      <div class="prod">${e.producto||'Preparado magistral'}</div>
+      ${e.obs?`<div style="font-size:6.5pt;color:#555">${e.obs}</div>`:''}
+    </div>
+    <div class="foot">
+      <div class="codigo">${e.codigo||'—'}</div>
+      <div class="fline">Desde: ${e.sucursal}</div>
+      <div class="fline">Por: ${e.by||'—'}</div>
+      ${e.distancia_km?`<div class="fline">Dist. aprox. ${e.distancia_km} km · ${fmtPesos(e.precio)}</div>`:''}
+    </div>
+  </div>
+</div>
+<script>setTimeout(()=>window.print(),300);<\/script>
+</body></html>`;
+  const w=window.open('','_blank','width=320,height=520');
+  if(w){w.document.write(html);w.document.close();}else toast('Habilitá popups para imprimir');
+}
+function _dlCSV(csv,name){const u=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download=name;a.click();toast('Exportado ✓');}
+function exportClientesCSV(){const rows=clientesEnvio.map(c=>({Nombre:c.nombre,Telefono:c.telefono||'',Direccion:c.direccion||'',Notas:c.notas||'',Envios:enviosDom.filter(e=>e.clienteId===c.id).length,Creado:new Date(c.creado).toLocaleDateString('es-AR')}));_dlCSV(_toCSV(rows),'clientes_domicilio.csv');}
+function exportEnviosCSV(){const rows=enviosDom.map(e=>{const c=clientesEnvio.find(x=>x.id===e.clienteId)||{};return{Cliente:c.nombre||'—',Telefono:c.telefono||'—',Direccion:e.direccionDest,Km:e.distancia_km||'',Precio:e.precio||'',Producto:e.producto||'',Obs:e.obs||'',Sucursal:e.sucursal,Estado:ENVIO_EST[e.estado],Fecha:new Date(e.creado).toLocaleDateString('es-AR')};});_dlCSV(_toCSV(rows),'envios_domicilio.csv');}
+
 /* ===== INIT ===== */
-(async()=>{await loadAll();state.sucursal=(sucAct()[0]||{}).nombre||state.sucursal;const app=document.querySelector('.app');if(app)app.style.display='none';renderLogin();gsap.fromTo('#login .login-card',{y:18,opacity:0},{y:0,opacity:1,duration:.45,ease:'power3.out'});})();
+(async()=>{await loadAll();if (config.darkMode) {
+    document.documentElement.classList.add('dark');
+  }state.sucursal=(sucAct()[0]||{}).nombre||state.sucursal;const app=document.querySelector('.app');if(app)app.style.display='none';renderLogin();gsap.fromTo('#login .login-card',{y:18,opacity:0},{y:0,opacity:1,duration:.45,ease:'power3.out'});})();
 </script>
 </body>
 </html>
