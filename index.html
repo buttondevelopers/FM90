@@ -659,7 +659,7 @@ function bldIcon(){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentC
 function sucForm(id){const s=id?sucursalesList.find(x=>x.id===id):null;const noEnv=s&&!orders.some(o=>o.sucursal===s.nombre);
   return `<div class="${s?'irow-form':'irow-form-new'}"><div class="group">
     <div class="fld"><label class="lbl">Nombre de la sucursal</label><input class="inp" id="s-nom" value="${esc(s?s.nombre:'')}" placeholder="Ej: Sucursal Haedo"></div>
-    <div class="fld"><label class="lbl">Dirección (para cálculo de envíos)</label><input class="inp" id="s-dir" value="${esc(s?s.direccion||'':'')}" placeholder="Rivadavia 1234, Haedo, Buenos Aires"></div>
+    <div class="fld"><label class="lbl">Dirección (para cálculo de envíos)</label><input class="inp" id="s-dir" value="${esc(s?s.direccion||'':'')}" placeholder="Empezá a escribir: Rivadavia 1234, Haedo" oninput="sucDirAutocomplete()" onblur="setTimeout(()=>{const b=document.getElementById('s-dir-sugg');if(b)b.style.display='none'},200)" autocomplete="off"><div id="s-dir-sugg" class="sugg-list" style="display:none"></div></div>
     ${s?`<div class="fld"><label class="lbl">Estado</label><br><button class="pill ${s.activa?'on':''}" id="s-act" data-v="${s.activa?'1':'0'}" onclick="this.dataset.v=this.dataset.v==='0'?'1':'0';this.classList.toggle('on');this.textContent=this.classList.contains('on')?'Activa':'Inactiva'">${s.activa?'Activa':'Inactiva'}</button></div>`:''}
   </div><div class="form-actions"><button class="btn btn-primary" style="flex:1" onclick="saveSuc()">Guardar</button><button class="btn-cancel" onclick="state.sucEdit=null;render()">Cancelar</button></div>
   ${s&&noEnv?`<button class="btn-add" style="background:#FBE9E6;color:var(--red);box-shadow:none;margin-top:8px" onclick="delSuc('${s.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Eliminar sucursal</button>`:''}
@@ -675,9 +675,10 @@ function renderCfgSuc(){
   <button class="btn-add" onclick="xEdit('sucEdit','new')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Nueva sucursal</button>`;
 }
 async function saveSuc(){const nom=$('#s-nom').value.trim();if(!nom){toast('Falta el nombre');return;}
-  const dir=$('#s-dir').value.trim();const id=state.sucEdit==='new'?null:state.sucEdit;
-  if(id){const s=sucursalesList.find(x=>x.id===id);const dc=s.direccion!==dir;s.nombre=nom;s.direccion=dir;if(dc){s.lat=null;s.lon=null;}const a=$('#s-act');if(a)s.activa=a.dataset.v==='1';}
-  else sucursalesList.push({id:uid(),nombre:nom,direccion:dir,activa:true,lat:null,lon:null});
+  const dirEl=$('#s-dir');const dir=dirEl.value.trim();const id=state.sucEdit==='new'?null:state.sucEdit;
+  const pLat=dirEl.dataset.lat?+dirEl.dataset.lat:null,pLon=dirEl.dataset.lon?+dirEl.dataset.lon:null;
+  if(id){const s=sucursalesList.find(x=>x.id===id);const dc=s.direccion!==dir;s.nombre=nom;s.direccion=dir;if(dc){s.lat=pLat;s.lon=pLon;}const a=$('#s-act');if(a)s.activa=a.dataset.v==='1';}
+  else sucursalesList.push({id:uid(),nombre:nom,direccion:dir,activa:true,lat:pLat,lon:pLon});
   await Store.setJSON(K.SUC,sucursalesList);state.sucEdit=null;toast('Sucursal guardada ✓');render();}
 async function toggleSuc(id){const s=sucursalesList.find(x=>x.id===id);s.activa=!s.activa;await Store.setJSON(K.SUC,sucursalesList);render();}
 async function delSuc(id){const s=sucursalesList.find(x=>x.id===id);if(orders.some(o=>o.sucursal===s.nombre)){toast('Tiene envíos: solo se puede desactivar');return;}sucursalesList=sucursalesList.filter(x=>x.id!==id);await Store.setJSON(K.SUC,sucursalesList);state.sucEdit=null;toast('Sucursal eliminada');render();}
@@ -761,15 +762,27 @@ function renderCfgMed(){
 }
 
 function renderCfgFarma(){
+  const e=config.envio||{tarifa_minima:4000,radio_minimo_km:3,tarifa_por_km:800};
+  const metodo=config.gmapsKey?'Google Maps (preciso)':'Georef gob.ar (gratis)';
   return `<div class="h1">Datos de la farmacia</div><div class="sub">Lo que hace que el sistema se vea con tu marca.</div>
   <div class="group">
     <div class="fld"><label class="lbl">Nombre de la farmacia</label><input class="inp" id="cf-nom" value="${esc(config.nombre||'')}"></div>
     <div class="fld"><label class="lbl">Color principal</label><div style="display:flex;align-items:center;gap:12px"><input type="color" id="cf-col" value="${config.color||'#2F6933'}" style="width:54px;height:42px;border:1px solid var(--line);border-radius:10px;background:none;padding:2px"><span class="mat" style="font-size:13px">Cambia el color de toda la app.</span></div></div>
     <div class="fld"><label class="lbl">Logo</label><div class="mat" style="font-size:13px">Se carga al dar de alta cada farmacia. En el prototipo viene fijo el de Moreno 90.</div></div>
   </div>
+  <div class="group" style="margin-top:14px">
+    <div style="font-weight:700;font-size:14px;margin-bottom:10px">🛵 Tarifas de envío a domicilio</div>
+    <div class="row2"><div><label class="lbl">Tarifa mínima ($)</label><input class="inp" id="cf-env-min" type="number" value="${e.tarifa_minima||4000}"></div><div><label class="lbl">Radio gratis (km)</label><input class="inp" id="cf-env-km" type="number" step="0.5" value="${e.radio_minimo_km||3}"></div></div>
+    <div class="fld"><label class="lbl">Tarifa por km adicional ($)</label><input class="inp" id="cf-env-tpkm" type="number" value="${e.tarifa_por_km||800}"></div>
+  </div>
+  <div class="group" style="margin-top:14px">
+    <div style="font-weight:700;font-size:14px;margin-bottom:6px">🗺️ Precisión de direcciones</div>
+    <div class="mat" style="font-size:12.5px;margin-bottom:10px">Método actual: <b>${metodo}</b>.<br>Sin API key usa Georef (gobierno argentino, gratis). Si cargás una key de Google Maps, usa Google (más preciso, lo paga la farmacia con su cuenta).</div>
+    <div class="fld"><label class="lbl">API Key de Google Maps (opcional)</label><input class="inp" id="cf-gmaps" value="${esc(config.gmapsKey||'')}" placeholder="Dejá vacío para usar Georef gratis"></div>
+  </div>
   <button class="btn btn-primary" onclick="saveFarma()">Guardar cambios</button>`;
 }
-async function saveFarma(){config.nombre=$('#cf-nom').value.trim()||config.nombre;config.color=$('#cf-col').value;config.envio={tarifa_minima:+$('#cf-env-min').value||4000,radio_minimo_km:+$('#cf-env-km').value||3,tarifa_por_km:+$('#cf-env-tpkm').value||800};await Store.setJSON(K.CFG,config);applyConfig();toast('Datos guardados ✓');render();}
+async function saveFarma(){const g=id=>$(id);config.nombre=g('#cf-nom')?.value.trim()||config.nombre;if(g('#cf-col'))config.color=g('#cf-col').value;const cur=config.envio||{};config.envio={tarifa_minima:+(g('#cf-env-min')?.value)||cur.tarifa_minima||4000,radio_minimo_km:+(g('#cf-env-km')?.value)||cur.radio_minimo_km||3,tarifa_por_km:+(g('#cf-env-tpkm')?.value)||cur.tarifa_por_km||800};const k=g('#cf-gmaps')?.value.trim();config.gmapsKey=k||'';await Store.setJSON(K.CFG,config);applyConfig();toast('Datos guardados ✓');render();}
 
 /* ===== BACKUP / RESTAURACIÓN ===== */
 function renderCfgBackup(){
@@ -1046,7 +1059,47 @@ const ENVIO_EST={pendiente:'Pendiente',en_camino:'En camino',entregado:'Entregad
 const ENVIO_COL={pendiente:'c-pend',en_camino:'c-acep',entregado:'c-listo'};
 function fmtPesos(n){return '$'+Math.round(n).toLocaleString('es-AR');}
 function haversine(la1,lo1,la2,lo2){const R=6371,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180;const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2;return +(R*2*Math.asin(Math.sqrt(a))).toFixed(2);}
-async function geocodeDom(addr){try{const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr+', Argentina')}&format=json&limit=1&accept-language=es`,{headers:{'User-Agent':'Magistral/1.0'}});const d=await r.json();return d.length?{lat:+d[0].lat,lon:+d[0].lon}:null;}catch{return null;}}
+function _sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+// Geocodificador en cascada: Google (si hay key) -> Georef (gob.ar, AR) -> OpenStreetMap
+async function geocodeDom(addr){
+  if(config.gmapsKey){const g=await geocodeGoogle(addr);if(g)return g;}
+  const gr=await geocodeGeoref(addr);if(gr)return gr;
+  return await geocodeNominatim(addr);
+}
+async function geocodeGoogle(addr){
+  try{
+    const u=`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addr)}&key=${config.gmapsKey}&region=ar&language=es&components=country:AR`;
+    const r=await fetch(u);if(!r.ok)return null;const d=await r.json();
+    if(d.status!=='OK'||!d.results||!d.results.length)return null;
+    const res=d.results[0],loc=res.geometry.location;
+    const lt=res.geometry.location_type;
+    const preciso=lt==='ROOFTOP'||lt==='RANGE_INTERPOLATED';
+    return {lat:loc.lat,lon:loc.lng,label:'Google: '+(res.formatted_address||''),tipo:preciso?'':'approximate',clase:''};
+  }catch{return null;}
+}
+async function geocodeGeoref(addr){
+  try{
+    const parts=addr.split(',').map(s=>s.trim()).filter(Boolean);
+    const calle=parts[0]||addr;const loc=parts[1]||'';const prov=parts[2]||'';
+    let u=`https://apis.datos.gob.ar/georef/api/direcciones?direccion=${encodeURIComponent(calle)}&max=1`;
+    if(loc)u+=`&localidad=${encodeURIComponent(loc)}`;
+    if(prov)u+=`&provincia=${encodeURIComponent(prov)}`;
+    const r=await fetch(u);if(!r.ok)return null;const d=await r.json();
+    const hit=(d.direcciones||[])[0];if(!hit)return null;
+    const ub=hit.ubicacion||hit.coordenadas||hit.ubicación;
+    if(!ub||ub.lat==null)return null;
+    // Georef marca si encontró la altura exacta o solo la calle/centroide
+    const tieneAltura=hit.altura&&hit.altura.valor!=null;
+    return {lat:+ub.lat,lon:+ub.lon,label:'Georef: '+(hit.nomenclatura||calle),tipo:tieneAltura?'':'approximate',clase:''};
+  }catch{return null;}
+}
+async function geocodeNominatim(addr){
+  try{
+    const u=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1&countrycodes=ar&addressdetails=1&accept-language=es`;
+    const r=await fetch(u);if(!r.ok)return null;const d=await r.json();if(!d.length)return null;
+    const hit=d[0];return {lat:+hit.lat,lon:+hit.lon,label:'OSM: '+(hit.display_name||''),tipo:hit.type||'',clase:hit.class||''};
+  }catch{return null;}
+}
 function calcPrecioEnvio(km){const cfg=config.envio||{};const min=cfg.tarifa_minima||4000,radio=cfg.radio_minimo_km||3,tpkm=cfg.tarifa_por_km||800;return km<=radio?min:min+(km-radio)*tpkm;}
 
 function renderDomicilios(){
@@ -1115,21 +1168,97 @@ function renderClientesList(){
 }
 
 let _envGeo={lat:null,lon:null,km:null,precio:null};
-function clearCalc(){_envGeo={lat:null,lon:null,km:null,precio:null};['#env-calc-result','#env-calc-warn'].forEach(id=>{const el=$(id);if(el)el.style.display='none';});}
+function clearCalc(){_envGeo={lat:null,lon:null,km:null,precio:null,picked:false};['#env-calc-result','#env-calc-warn'].forEach(id=>{const el=$(id);if(el)el.style.display='none';});}
 function toggleNuevoCliente(){const f=$('#env-nuevo-form');if(f)f.style.display=f.style.display==='none'?'block':'none';}
-function calcManual(){const km=+($('#env-km-manual')?.value||0);if(!km)return;const precio=calcPrecioEnvio(km);_envGeo.km=km;_envGeo.precio=precio;$('#env-calc-result').style.display='block';$('#env-dist').textContent=km+' km (manual)';$('#env-precio').textContent=fmtPesos(precio);}
+function calcManual(fromBox){const km=+((fromBox?$('#env-km-manual2'):$('#env-km-manual'))?.value||$('#env-km-manual2')?.value||$('#env-km-manual')?.value||0);if(!km){return;}const precio=calcPrecioEnvio(km);_envGeo.km=km;_envGeo.precio=precio;$('#env-calc-result').style.display='block';$('#env-dist').textContent=km+' km (manual)';$('#env-precio').textContent=fmtPesos(precio);const l=$('#env-geo-label');if(l)l.textContent='Distancia ingresada a mano';}
 
+let _dirTimer=null,_dirCache={};
+let _sucDirTimer=null,_sucDirCache={};
+function sucDirAutocomplete(){
+  const inp=$('#s-dir'),box=$('#s-dir-sugg');if(!inp||!box)return;
+  // si editaban una sucursal ya geocodificada, al cambiar la dirección se recalcula sola al guardar
+  const q=inp.value.trim();
+  if(q.length<4){box.style.display='none';return;}
+  clearTimeout(_sucDirTimer);
+  _sucDirTimer=setTimeout(async()=>{
+    const hits=await suggestDirecciones(q);
+    if(!hits.length){box.style.display='none';return;}
+    box.innerHTML=hits.map((hit,i)=>`<div class="sugg-item" data-i="${i}" onmousedown="sucDirPick(${i})" ontouchstart="sucDirPick(${i})">${esc(hit.label)}</div>`).join('');
+    box.style.display='block';
+    _sucDirCache[q]=hits;box.dataset.q=q;
+  },350);
+}
+function sucDirPick(i){
+  const box=$('#s-dir-sugg'),inp=$('#s-dir');if(!box||!inp)return;
+  const q=box.dataset.q,hits=_sucDirCache[q]||[];const hit=hits[i];if(!hit)return;
+  inp.value=hit.label;box.style.display='none';
+  // Guardar coords elegidas para que saveSuc no tenga que geocodificar
+  inp.dataset.lat=hit.lat;inp.dataset.lon=hit.lon;
+  toast('Dirección seleccionada ✓');
+}
+function dirAutocomplete(){
+  clearCalc();
+  const inp=$('#env-dir'),box=$('#dir-sugg');if(!inp||!box)return;
+  const q=inp.value.trim();
+  if(q.length<4){box.style.display='none';return;}
+  clearTimeout(_dirTimer);
+  _dirTimer=setTimeout(async()=>{
+    const hits=await suggestDirecciones(q);
+    if(!hits.length){box.style.display='none';return;}
+    box.innerHTML=hits.map((hit,i)=>`<div class="sugg-item" data-i="${i}" onmousedown="dirPick(${i})" ontouchstart="dirPick(${i})">${esc(hit.label)}</div>`).join('');
+    box.style.display='block';
+    _dirCache[q]=hits;box.dataset.q=q;
+  },350);
+}
+async function suggestDirecciones(q){
+  // Google si hay key (Places-like via Geocoding), sino Georef (gratis, AR)
+  if(config.gmapsKey){
+    try{
+      const u=`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(q)}&key=${config.gmapsKey}&region=ar&language=es&components=country:AR`;
+      const r=await fetch(u);const d=await r.json();
+      if(d.status==='OK'&&d.results.length)return d.results.slice(0,5).map(res=>({label:res.formatted_address,lat:res.geometry.location.lat,lon:res.geometry.location.lng}));
+    }catch{}
+  }
+  // Georef: parsear "calle altura, localidad, provincia"
+  try{
+    const parts=q.split(',').map(s=>s.trim()).filter(Boolean);
+    const calle=parts[0]||q,loc=parts[1]||'',prov=parts[2]||'';
+    let u=`https://apis.datos.gob.ar/georef/api/direcciones?direccion=${encodeURIComponent(calle)}&max=6&campos=estandar`;
+    if(loc)u+=`&localidad=${encodeURIComponent(loc)}`;
+    if(prov)u+=`&provincia=${encodeURIComponent(prov)}`;
+    const r=await fetch(u);const d=await r.json();
+    return (d.direcciones||[]).map(hit=>{
+      const ub=hit.ubicacion||hit.coordenadas||{};
+      const locN=hit.localidad_censal?.nombre||hit.localidad?.nombre||'';
+      const provN=hit.provincia?.nombre||'';
+      return {label:(hit.nomenclatura||calle)+(locN&&!hit.nomenclatura?.includes(locN)?', '+locN:'')+(provN?', '+provN:''),lat:ub.lat,lon:ub.lon};
+    }).filter(x=>x.lat!=null);
+  }catch{return [];}
+}
+function dirPick(i){
+  const box=$('#dir-sugg'),inp=$('#env-dir');if(!box||!inp)return;
+  const q=box.dataset.q,hits=_dirCache[q]||[];const hit=hits[i];if(!hit)return;
+  inp.value=hit.label;
+  box.style.display='none';
+  // Ya tenemos coords: precargar para el cálculo
+  _envGeo.lat=hit.lat;_envGeo.lon=hit.lon;_envGeo.picked=true;
+  toast('Dirección seleccionada ✓');
+}
 function envioFormInline(){
   clearCalc();
+  const sucs=sucAct();
+  const origen=state.sucursal||(sucs[0]||{}).nombre||'';
   return `<div class="irow-form-new">
   <div class="group">
+    <div class="fld"><label class="lbl">Sucursal de salida</label><div class="selwrap"><select class="sel" id="env-suc-origen" onchange="clearCalc()">${sucs.map(s=>`<option ${s.nombre===origen?'selected':''} ${!s.direccion?'data-nodir="1"':''}>${esc(s.nombre)}${!s.direccion?' (sin dirección)':''}</option>`).join('')}</select></div></div>
     <div class="fld"><label class="lbl">Cliente registrado</label><div class="selwrap"><select class="sel" id="env-cli" onchange="autoFillDir()"><option value="">— Seleccioná o cargá nuevo —</option>${clientesEnvio.map(c=>`<option value="${c.id}" data-dir="${esc(c.direccion||'')}">${esc(c.nombre)}${c.telefono?' · '+c.telefono:''}</option>`).join('')}</select></div></div>
     <button class="btn-add" style="background:#f4f6f4;color:var(--ink);box-shadow:none;margin-bottom:4px" onclick="toggleNuevoCliente()">+ Cargar cliente nuevo</button>
     <div id="env-nuevo-form" style="display:none;background:#f8f9f8;border-radius:10px;padding:10px;margin-bottom:8px">
       <div class="fld"><label class="lbl">Nombre</label><input class="inp" id="env-nom" placeholder="Nombre y apellido"></div>
       <div class="fld"><label class="lbl">Teléfono</label><input class="inp" id="env-tel" type="tel" placeholder="11 1234-5678"></div>
     </div>
-    <div class="fld"><label class="lbl">Dirección de entrega</label><input class="inp" id="env-dir" placeholder="Ej: Rivadavia 1234, Haedo" oninput="clearCalc()"></div>
+    <div class="fld"><label class="lbl">Dirección de entrega</label><input class="inp" id="env-dir" placeholder="Empezá a escribir: Rivadavia 1234, Haedo" oninput="dirAutocomplete()" onblur="setTimeout(()=>{const b=document.getElementById('dir-sugg');if(b)b.style.display='none'},200)" autocomplete="off"><div id="dir-sugg" class="sugg-list" style="display:none"></div></div>
+    <div class="fld" style="font-size:11px;color:var(--muted);margin-top:-4px">Escribí la calle y altura, después la localidad. Elegí de la lista para mayor precisión.</div>
     <div class="fld"><label class="lbl">Producto / descripción</label><input class="inp" id="env-prod" placeholder="Ej: Crema magistral, receta"></div>
     <div class="fld"><label class="lbl">Notas para el repartidor</label><input class="inp" id="env-obs" placeholder="Horario, piso, timbre, etc."></div>
   </div>
@@ -1138,37 +1267,55 @@ function envioFormInline(){
     <div id="env-dist" style="font-weight:700;font-size:17px;color:var(--green);margin-bottom:4px"></div>
     <div style="font-size:12px;color:var(--muted)">Costo del envío</div>
     <div id="env-precio" style="font-weight:800;font-size:28px;color:var(--ink)"></div>
+    <div id="env-geo-label" style="font-size:10.5px;color:var(--muted);margin-top:6px;line-height:1.3"></div>
     <div style="font-size:11px;color:var(--muted);margin-top:4px">⚠️ Estimación en línea recta</div>
   </div>
   <div id="env-calc-warn" style="display:none" class="login-warn">No se pudo ubicar la dirección. Ingresá los km manualmente:<br><input class="inp" id="env-km-manual" type="number" min="0" step="0.1" placeholder="km" oninput="calcManual()"></div>
-  <button class="btn btn-ghost" onclick="calcEnvio()">📍 Calcular distancia y precio</button>
+  <button class="btn btn-ghost" id="env-calc-btn" onclick="calcEnvio()">📍 Calcular distancia y precio</button>
+  <button class="btn-add" style="background:#f4f6f4;color:var(--ink);box-shadow:none;margin-top:6px" onclick="toggleManual()">✏️ Ajustar distancia a mano</button>
+  <div id="env-manual-box" style="display:none;margin-top:8px">
+    <div class="fld"><label class="lbl">Distancia en km (manual)</label><input class="inp" id="env-km-manual2" type="number" min="0" step="0.1" placeholder="Ej: 4.5" oninput="calcManual(true)"></div>
+  </div>
   <div class="form-actions" style="margin-top:8px">
     <button class="btn btn-primary" style="flex:1" onclick="saveEnvio()">Confirmar envío</button>
     <button class="btn-cancel" onclick="state.envNew=false;render()">Cancelar</button>
   </div></div>`;
 }
+function toggleManual(){const b=$('#env-manual-box');if(b)b.style.display=b.style.display==='none'?'block':'none';}
 // openEnvioForm replaced by envioFormInline()
 function autoFillDir(){const sel=$('#env-cli');if(!sel)return;const opt=sel.options[sel.selectedIndex];const dir=opt?.dataset?.dir;if(dir&&$('#env-dir'))$('#env-dir').value=dir;clearCalc();}
 
 async function calcEnvio(){
   const dir=$('#env-dir')?.value.trim();if(!dir){toast('Ingresá la dirección primero');return;}
-  const btn=document.querySelector('#dw button.btn-ghost');if(btn)btn.textContent='⏳ Calculando…';
-  const suc=sucursalesList.find(s=>s.nombre===state.sucursal);
-  if(!suc?.direccion){if(btn)btn.textContent='📍 Calcular distancia y precio';toast('La sucursal no tiene dirección. Admin → Sucursales → editá la sucursal y agregá la dirección.');return;}
+  const btn=$('#env-calc-btn');
+  const sucNom=$('#env-suc-origen')?.value||state.sucursal;
+  const suc=sucursalesList.find(s=>s.nombre===sucNom);
+  if(!suc){toast('Elegí la sucursal de salida');return;}
+  if(!suc.direccion){toast('La sucursal "'+sucNom+'" no tiene dirección cargada. Admin → Sucursales → editala y agregá la dirección.');return;}
+  if(btn){btn.textContent='⏳ Ubicando sucursal…';btn.disabled=true;}
   // Get/cache sucursal coords
   let latO=suc.lat,lonO=suc.lon;
-  if(!latO){const g=await geocodeDom(suc.direccion);if(!g){if(btn)btn.textContent='📍 Calcular distancia y precio';toast('No se pudo ubicar la sucursal. Revisá la dirección en Admin → Sucursales.');return;}latO=g.lat;lonO=g.lon;suc.lat=latO;suc.lon=lonO;await Store.setJSON(K.SUC,sucursalesList);}
-  // Geocode client address
-  const geo=await geocodeDom(dir);
-  if(btn)btn.textContent='📍 Calcular distancia y precio';
-  if(!geo){$('#env-calc-warn').style.display='block';return;}
+  if(!latO){const g=await geocodeDom(suc.direccion);if(!g){if(btn){btn.textContent='📍 Calcular distancia y precio';btn.disabled=false;}toast('No se pudo ubicar la dirección de la sucursal. Revisala en Admin → Sucursales (poné calle, altura, localidad).');return;}latO=g.lat;lonO=g.lon;suc.lat=latO;suc.lon=lonO;await Store.setJSON(K.SUC,sucursalesList);await _sleep(1100);}
+  // Si la dirección fue elegida del autocompletado, ya tenemos sus coordenadas
+  let geo;
+  if(_envGeo.picked&&_envGeo.lat!=null){geo={lat:_envGeo.lat,lon:_envGeo.lon,label:dir,tipo:'',clase:''};}
+  else{
+    if(btn)btn.textContent='⏳ Ubicando domicilio…';
+    geo=await geocodeDom(dir);
+  }
+  if(btn){btn.textContent='📍 Calcular distancia y precio';btn.disabled=false;}
+  if(!geo){$('#env-calc-warn').style.display='block';$('#env-calc-result').style.display='none';return;}
   const km=haversine(+latO,+lonO,geo.lat,geo.lon);
   const precio=calcPrecioEnvio(km);
   _envGeo={lat:geo.lat,lon:geo.lon,km,precio};
+  // Quality hint: if Nominatim only matched a town/locality (not a house number), warn
+  const impreciso=['administrative','city','town','village','suburb','locality'].includes(geo.tipo)||geo.clase==='boundary';
   $('#env-calc-result').style.display='block';
-  $('#env-dist').textContent=km+' km';
+  $('#env-dist').textContent=km+' km'+(impreciso?' (aprox. — revisar)':'');
   $('#env-precio').textContent=fmtPesos(precio);
-  $('#env-calc-warn').style.display='none';
+  const lblEl=$('#env-geo-label');if(lblEl)lblEl.textContent=geo.label?('📍 '+geo.label):'';
+  $('#env-calc-warn').style.display=impreciso?'block':'none';
+  if(impreciso){const w=$('#env-calc-warn');if(w)w.innerHTML='La dirección se ubicó de forma imprecisa (quizás solo la localidad). Verificá el precio o ajustá los km a mano:<br><input class="inp" id="env-km-manual" type="number" min="0" step="0.1" placeholder="km" value="'+km+'" oninput="calcManual()">';}
 }
 
 async function saveEnvio(){
