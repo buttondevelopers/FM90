@@ -1104,8 +1104,8 @@ function calcPrecioEnvio(km){const cfg=config.envio||{};const min=cfg.tarifa_min
 
 function renderDomicilios(){
   const t=state.domTab||'envios';
-  return `<div class="labtabs"><button class="ltab ${t==='envios'?'on':''}" onclick="state.domTab='envios';render()">📦 Envíos</button><button class="ltab ${t==='clientes'?'on':''}" onclick="state.domTab='clientes';render()">👥 Clientes</button></div>`
-    +(t==='envios'?renderEnviosList():renderClientesList());
+  return `<div class="labtabs"><button class="ltab ${t==='envios'?'on':''}" onclick="state.domTab='envios';render()">📦 Envíos</button><button class="ltab ${t==='recorrido'?'on':''}" onclick="state.domTab='recorrido';render()">🗺️ Recorrido</button><button class="ltab ${t==='clientes'?'on':''}" onclick="state.domTab='clientes';render()">👥 Clientes</button></div>`
+    +(t==='envios'?renderEnviosList():t==='recorrido'?renderRecorrido():renderClientesList());
 }
 function renderEnviosList(){
   const f=state.domFilter||'todos';
@@ -1141,6 +1141,82 @@ function renderEnviosList(){
     ${state.envNew?envioFormInline():''}
   ${state.role==='admin'?`<button class="btn-add" style="background:#1A6B3A" onclick="exportEnviosCSV()">📊 Exportar envíos</button>`:''}
   </div>`;
+}
+/* ===== RECORRIDO (hoja de ruta del repartidor) ===== */
+function buildRoute(origin,stops){
+  const route=[],rem=stops.slice();let cur=origin;
+  while(rem.length){
+    let bi=0,bd=Infinity;
+    for(let i=0;i<rem.length;i++){const d=haversine(cur.lat,cur.lon,rem[i].lat_dest,rem[i].lon_dest);if(d<bd){bd=d;bi=i;}}
+    const nx=rem.splice(bi,1)[0];nx._legKm=bd;route.push(nx);cur={lat:nx.lat_dest,lon:nx.lon_dest};
+  }
+  return route;
+}
+function routeMapsUrl(origin,ordered){
+  const pts=ordered.filter(e=>e.lat_dest!=null);if(!pts.length)return null;
+  const dest=pts[pts.length-1];
+  const mids=pts.slice(0,-1).map(e=>`${e.lat_dest},${e.lon_dest}`).join('|');
+  let u=`https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lon}&destination=${dest.lat_dest},${dest.lon_dest}&travelmode=driving`;
+  if(mids)u+=`&waypoints=${encodeURIComponent(mids)}`;
+  return u;
+}
+function renderRecorrido(){
+  const sucs=sucAct();
+  const sucNom=state.role==='admin'?(state.rutaSuc||state.sucursal||(sucs[0]||{}).nombre):state.sucursal;
+  const suc=sucursalesList.find(s=>s.nombre===sucNom);
+  const selector=state.role==='admin'&&sucs.length>1?`<div class="fld"><label class="lbl">Sucursal de salida</label><div class="selwrap"><select class="sel" onchange="state.rutaSuc=this.value;render()">${sucs.map(s=>`<option ${s.nombre===sucNom?'selected':''}>${esc(s.nombre)}</option>`).join('')}</select></div></div>`:'';
+  let head=`<div class="h1">Recorrido del día</div><div class="sub">Salida desde ${esc(sucNom||'—')} · ordenado por cercanía</div>${selector}`;
+
+  if(!suc){return head+'<div class="empty"><div class="t">Elegí una sucursal</div></div>';}
+  if(suc.lat==null){return head+`<div class="login-warn">La sucursal <b>${esc(sucNom)}</b> no tiene ubicación cargada. Andá a Admin → Sucursales, editá la sucursal y elegí la dirección del autocompletado para fijar el punto de salida.</div>`;}
+
+  // Envíos a entregar de esta sucursal (pendiente + en_camino)
+  const aEntregar=enviosDom.filter(e=>e.sucursal===sucNom&&(e.estado==='pendiente'||e.estado==='en_camino'));
+  if(!aEntregar.length){return head+'<div class="empty"><div class="t">No hay envíos pendientes para armar el recorrido</div></div>';}
+
+  const conCoord=aEntregar.filter(e=>e.lat_dest!=null);
+  const sinCoord=aEntregar.filter(e=>e.lat_dest==null);
+  const origin={lat:+suc.lat,lon:+suc.lon};
+  const ruta=buildRoute(origin,conCoord);
+  const totalKm=ruta.reduce((a,e)=>a+(e._legKm||0),0);
+  const mapsUrl=routeMapsUrl(origin,ruta);
+
+  let out=head;
+  out+=`<div style="background:var(--green-l);border:1.5px solid var(--green);border-radius:13px;padding:14px 16px;margin-bottom:14px">
+    <div style="font-size:13px;color:var(--muted)">Paradas en este recorrido</div>
+    <div style="font-weight:800;font-size:22px;color:var(--ink)">${ruta.length} ${ruta.length===1?'entrega':'entregas'}</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:4px">Distancia total aprox. ${totalKm.toFixed(1)} km (línea recta)</div>
+  </div>`;
+  if(mapsUrl){
+    const overLimit=ruta.length>10;
+    out+=`<a href="${mapsUrl}" target="_blank" class="btn btn-primary" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px">🗺️ Abrir recorrido completo en Google Maps</a>`;
+    if(overLimit)out+=`<div style="font-size:11px;color:var(--amber);margin-bottom:10px">⚠️ Son muchas paradas; Google Maps puede mostrar solo las primeras ~10. Conviene dividir en dos viajes.</div>`;
+    else out+=`<div style="height:8px"></div>`;
+  }
+
+  out+=ruta.map((e,i)=>{
+    const cl=clientesEnvio.find(c=>c.id===e.clienteId)||{};
+    return `<div class="item" style="align-items:flex-start">
+      <div style="min-width:32px;height:32px;border-radius:99px;background:var(--green);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px">${i+1}</div>
+      <div class="imain"><div class="tt">${esc(e.codigo||'')} · ${esc(cl.nombre||'—')}</div>
+        <div class="ss">${esc(e.direccionDest||'—')}</div>
+        <div class="ss">${esc(e.producto||'—')}${cl.telefono?' · 📞 '+esc(cl.telefono):''}</div>
+        <div class="ss" style="color:var(--green)">${i===0?'A '+(e._legKm||0).toFixed(1)+' km de la sucursal':'+'+(e._legKm||0).toFixed(1)+' km desde parada '+i}</div>
+      </div>
+      <a href="https://www.google.com/maps/dir/?api=1&destination=${e.lat_dest},${e.lon_dest}&travelmode=driving" target="_blank" class="btn-add" style="background:#0760A4;text-decoration:none;padding:8px 12px;min-width:auto">🗺️</a>
+    </div>`;
+  }).join('');
+
+  if(sinCoord.length){
+    out+=`<div class="secl" style="margin-top:16px">Sin ubicación (no entran al recorrido automático)</div>`;
+    out+=sinCoord.map(e=>{const cl=clientesEnvio.find(c=>c.id===e.clienteId)||{};
+      return `<div class="item" style="opacity:.75"><div class="iicon" style="font-size:18px;display:flex;align-items:center;justify-content:center">📍</div>
+        <div class="imain"><div class="tt">${esc(e.codigo||'')} · ${esc(cl.nombre||'—')}</div><div class="ss">${esc(e.direccionDest||'—')}</div></div>
+        <a href="https://maps.google.com/?q=${encodeURIComponent(e.direccionDest||'')}" target="_blank" class="btn-add" style="background:#0760A4;text-decoration:none;padding:8px 12px;min-width:auto">🗺️</a></div>`;
+    }).join('');
+    out+=`<div style="font-size:11px;color:var(--muted);margin-top:6px">Estos envíos se cargaron con distancia manual. Para incluirlos en el recorrido, editá el envío y elegí la dirección del autocompletado.</div>`;
+  }
+  return out;
 }
 function cliForm(id){const c=id?clientesEnvio.find(x=>x.id===id):null;const noEnv=c&&!enviosDom.some(e=>e.clienteId===c.id);
   return `<div class="${c?'irow-form':'irow-form-new'}"><div class="group">
