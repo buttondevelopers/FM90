@@ -16,10 +16,15 @@
 <html lang="es-AR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2F6933">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Magistral">
+<meta name="format-detection" content="telephone=no">
 <title>Magistral · Preparados</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{--green:#2F6933;--green-d:#244F27;--green-l:#E7EFE7;--dark:#1C1C1E;--ink:#1C1C1E;--gray:#8E8E93;--muted:#8E8E93;
     --bg:#F2F1ED;--card:#FFF;--line:#E4E3DE;--line2:#EFEEEA;--blue:#0760A4;--amber:#C8742B;--red:#C0392B;--red-l:#FBE9E6;
@@ -337,6 +342,27 @@
     .btn-primary, .btn-ghost { max-width: 400px; margin-left: auto; margin-right: auto; }
     .steps { max-width: 600px; margin: 20px auto 30px; }
   }
+
+  /* ===== Compatibilidad multiplataforma — iOS / Android / todos los navegadores ===== */
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{-webkit-overflow-scrolling:touch}
+  /* Evita el zoom automático de iOS al tocar un campo (requiere font-size >= 16px) */
+  .inp,.ta,.sel,.login-card input,.login-card .sel,input,select,textarea{font-size:16px}
+  /* Prefijos WebKit para Safari/iOS */
+  .sel,select{-webkit-appearance:none;appearance:none}
+  .head{position:-webkit-sticky;position:sticky}
+  /* Alturas reales en móvil: evita los saltos por la barra de direcciones de Safari */
+  .app{min-height:100vh;min-height:100dvh}
+  #login{min-height:100vh;min-height:100dvh}
+  /* Áreas seguras para iPhone con notch y barra inferior (Dynamic Island, home indicator) */
+  .head{padding-top:calc(14px + env(safe-area-inset-top,0px))}
+  .app{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+  #login{padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));padding-bottom:max(24px,env(safe-area-inset-bottom,0px))}
+  /* Suavizado de bordes táctiles y selección coherente */
+  button,a,.item,.acard,.medc,.sugg-item{-webkit-tap-highlight-color:transparent}
+  input,textarea{-webkit-user-select:text;user-select:text}
+  /* La impresión de etiquetas nunca debe mostrarse en pantalla */
+  #mg-print-frame{position:fixed!important;width:0!important;height:0!important;border:0!important;visibility:hidden}
 </style>
 </head>
 <body>
@@ -354,6 +380,8 @@
 <div id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span id="tmsg"></span></div>
 
 <script>
+/* Red de seguridad: si GSAP no cargó (señal mala / CDN caído), la app funciona igual sin animaciones */
+if(typeof gsap==='undefined'){window.gsap={to(){return{}},from(){return{}},fromTo(){return{}},set(){return{}},timeline(){return{to(){return this},from(){return this},fromTo(){return this}}}};}
 /* ===== STORAGE ===== */
 const Store=(()=>{const mem={};const ws=(window.storage&&typeof window.storage.get==='function')?window.storage:null;
   async function get(k){if(ws){try{const r=await ws.get(k,true);return r?r.value:null}catch(e){return null}}try{const v=localStorage.getItem(k);return v===null?(k in mem?mem[k]:null):v}catch(e){return k in mem?mem[k]:null}}
@@ -648,10 +676,11 @@ function recNuevoMed(){state.wrec=state.wrec||{};state.wrec.newMedForm=true;rend
 async function saveMed(){const nom=$('#nm-nom').value.trim();if(!nom){toast('Falta el nombre');return;}
   const mn=$('#nm-mn').value.trim(),mp=$('#nm-mp').value.trim();
   const data={nombre:nom,esp:$('#nm-esp').value.trim(),mn,mp,provincia:mp?$('#nm-prov').value:'',tipoMat:mn&&mp?'Ambas':mp?'MP':'MN'};
-  let m;if(_medEdit){m=medicos.find(x=>x.id===_medEdit);Object.assign(m,data);}else{m={id:uid(),...data,creado:Date.now()};medicos.push(m);}
+  const editId=(state.medEdit&&state.medEdit!=='new')?state.medEdit:null;
+  let m;if(editId){m=medicos.find(x=>x.id===editId);Object.assign(m,data);}else{m={id:uid(),...data,creado:Date.now()};medicos.push(m);}
   const wasRec=state.screen==='receta'&&state.wrec?.newMedForm;
   await Store.setJSON(K.MED,medicos);state.medEdit=null;
-  if(wasRec){state.wrec.newMedForm=false;state.wrec.medicoId=m.id;state.wrec.step=2;}else toast((state.medEdit===null?'Médico':'')+'Médico guardado ✓');
+  if(wasRec){state.wrec.newMedForm=false;state.wrec.medicoId=m.id;state.wrec.step=2;}else toast(editId?'Médico actualizado ✓':'Médico guardado ✓');
   render();}
 
 /* ===== CONFIGURACIÓN (admin) ===== */
@@ -1490,10 +1519,20 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fff;display:flex;align-i
     </div>
   </div>
 </div>
-<script>setTimeout(()=>window.print(),300);<\/script>
 </body></html>`;
-  const w=window.open('','_blank','width=320,height=520');
-  if(w){w.document.write(html);w.document.close();}else toast('Habilitá popups para imprimir');
+  let ifr=document.getElementById('mg-print-frame');
+  if(ifr)ifr.remove();
+  ifr=document.createElement('iframe');
+  ifr.id='mg-print-frame';
+  ifr.setAttribute('aria-hidden','true');
+  ifr.style.cssText='position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none';
+  document.body.appendChild(ifr);
+  const doc=ifr.contentWindow.document;
+  doc.open();doc.write(html);doc.close();
+  let done=false;
+  const fire=()=>{if(done)return;done=true;try{ifr.contentWindow.focus();ifr.contentWindow.print();}catch(err){toast('No se pudo abrir la impresión');}};
+  ifr.onload=fire;
+  setTimeout(fire,500);
 }
 function _dlCSV(csv,name){const u=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download=name;a.click();toast('Exportado ✓');}
 function exportClientesCSV(){const rows=clientesEnvio.map(c=>({Nombre:c.nombre,Telefono:c.telefono||'',Direccion:c.direccion||'',Notas:c.notas||'',Envios:enviosDom.filter(e=>e.clienteId===c.id).length,Creado:new Date(c.creado).toLocaleDateString('es-AR')}));_dlCSV(_toCSV(rows),'clientes_domicilio.csv');}
