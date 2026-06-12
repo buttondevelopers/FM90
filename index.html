@@ -375,8 +375,6 @@
   <div class="main" id="main"></div>
 </div>
 <div id="login"></div>
-<div class="ov" id="ov" onclick="closeDw()"></div>
-<div class="dw" id="dw"><div id="dwc"></div></div>
 <div id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span id="tmsg"></span></div>
 
 <script>
@@ -504,7 +502,6 @@ async function toggleDarkMode(){config.darkMode=!config.darkMode;await Store.set
     document.documentElement.classList.remove('dark');
   }applyConfig();if(state.session)fillUserbar();else renderLogin();}
 function xEdit(k,v){if(state[k]===v)state[k]=null;else{Object.keys(state).filter(x=>x.endsWith('Edit')||x==='envNew').forEach(x=>state[x]=x.endsWith('Edit')?null:false);state[k]=v;}render();}
-function setRole(r){state.role=r;state.filter='todos';nav(roleHome(r==='farma'?'farmacia':r==='lab'?'laboratorio':'admin'));}
 function nav(screen){state.screen=screen;render();}
 function render(){
   fillUserbar();
@@ -530,7 +527,7 @@ function render(){
   $('#main').innerHTML=(R[state.screen]||(()=>''))();
   if(state.screen==='receta')wireReceta();
   gsap.fromTo('.main > *',{y:16,opacity:0},{y:0,opacity:1,duration:.36,stagger:.05,ease:'power2.out'});
-  if(state.screen==='envios'||state.screen==='bandeja')setTimeout(hydrate,40);
+  if(state.screen==='envios'||state.screen==='bandeja')setTimeout(accHydrate,40);
 }
 function stepper(steps,cur){return `<div class="steps">${steps.map((s,i)=>{const cls=i<cur?'done':i===cur?'cur':'';const line=i<steps.length-1?`<div class="stepline ${i<cur?'done':''}"></div>`:'';return `<div class="step ${cls}"><div class="c">${i<cur?'✓':i+1}</div><div class="l">${s}</div></div>${line}`;}).join('')}</div>`;}
 
@@ -627,7 +624,7 @@ function renderReceta(){
     body=`<div class="h1">¿Qué médico firma la receta?</div><div class="sub">Buscalo por matrícula o nombre. Si no está, cargalo y queda disponible para todas las sucursales.</div>
     <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input placeholder="Buscar por matrícula, apellido…" value="${esc(w.medQ)}" oninput="state.wrec.medQ=this.value;render()"></div>
     ${list.map(m=>`<div class="medc ${w.medicoId===m.id?'sel':''}" onclick="recPickMed('${m.id}')"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 9V3M8 3h8"/></svg></div><div><div class="nm">${esc(m.nombre)}</div><div class="esp">${esc(m.esp||'')}</div><div class="mat"><span class="badge">${m.tipoMat}</span>${esc(medMat(m))}</div></div><span class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></span></div>`).join('')||'<div class="empty" style="padding:30px"><div class="t">Sin resultados</div><div>Cargá el médico nuevo abajo.</div></div>'}
-    <button class="btn-add" onclick="recNuevoMed()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Cargar médico nuevo</button>`;
+    ${w.newMedForm?medForm(null,`state.wrec.newMedForm=false;render()`):`<button class="btn-add" onclick="recNuevoMed()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Cargar médico nuevo</button>`}`;
   } else if(w.step===2){
     body=`<div class="h1">Datos del paciente</div><div class="sub">Si ya existe, se autocompleta al escribir el DNI o el nombre.</div>
     <div class="group">
@@ -680,7 +677,8 @@ async function saveMed(){const nom=$('#nm-nom').value.trim();if(!nom){toast('Fal
   let m;if(editId){m=medicos.find(x=>x.id===editId);Object.assign(m,data);}else{m={id:uid(),...data,creado:Date.now()};medicos.push(m);}
   const wasRec=state.screen==='receta'&&state.wrec?.newMedForm;
   await Store.setJSON(K.MED,medicos);state.medEdit=null;
-  if(wasRec){state.wrec.newMedForm=false;state.wrec.medicoId=m.id;state.wrec.step=2;}else toast(editId?'Médico actualizado ✓':'Médico guardado ✓');
+  if(state.wrec)state.wrec.newMedForm=false;
+  if(wasRec){state.wrec.medicoId=m.id;state.wrec.step=2;}else toast(editId?'Médico actualizado ✓':'Médico guardado ✓');
   render();}
 
 /* ===== CONFIGURACIÓN (admin) ===== */
@@ -709,7 +707,6 @@ async function saveSuc(){const nom=$('#s-nom').value.trim();if(!nom){toast('Falt
   if(id){const s=sucursalesList.find(x=>x.id===id);const dc=s.direccion!==dir;s.nombre=nom;s.direccion=dir;if(dc){s.lat=pLat;s.lon=pLon;}const a=$('#s-act');if(a)s.activa=a.dataset.v==='1';}
   else sucursalesList.push({id:uid(),nombre:nom,direccion:dir,activa:true,lat:pLat,lon:pLon});
   await Store.setJSON(K.SUC,sucursalesList);state.sucEdit=null;toast('Sucursal guardada ✓');render();}
-async function toggleSuc(id){const s=sucursalesList.find(x=>x.id===id);s.activa=!s.activa;await Store.setJSON(K.SUC,sucursalesList);render();}
 async function delSuc(id){const s=sucursalesList.find(x=>x.id===id);if(orders.some(o=>o.sucursal===s.nombre)){toast('Tiene envíos: solo se puede desactivar');return;}sucursalesList=sucursalesList.filter(x=>x.id!==id);await Store.setJSON(K.SUC,sucursalesList);state.sucEdit=null;toast('Sucursal eliminada');render();}
 
 function vendForm(id){const v=id?vendedoresList.find(x=>x.id===id):null;const noEnv=v&&!orders.some(o=>o.vendedor===v.nombre);
@@ -735,7 +732,6 @@ async function saveVend(){const nom=$('#v-nom').value.trim();if(!nom){toast('Fal
   if(id){const v=vendedoresList.find(x=>x.id===id);v.nombre=nom;v.sucursal=suc;const a=$('#v-act');if(a)v.activo=a.dataset.v==='1';}
   else vendedoresList.push({id:uid(),nombre:nom,sucursal:suc,activo:true});
   await Store.setJSON(K.VEND,vendedoresList);state.vendEdit=null;toast('Vendedor guardado ✓');render();}
-async function toggleVend(id){const v=vendedoresList.find(x=>x.id===id);v.activo=!v.activo;await Store.setJSON(K.VEND,vendedoresList);render();}
 async function delVend(id){const v=vendedoresList.find(x=>x.id===id);if(orders.some(o=>o.vendedor===v.nombre)){toast('Tiene envíos: solo se puede desactivar');return;}vendedoresList=vendedoresList.filter(x=>x.id!==id);state.vendEdit=null;toast('Vendedor eliminado');render();}
 /* ===== USUARIOS (login + roles) ===== */
 function userForm(id){const u=id?usuarios.find(x=>x.id===id):null;
@@ -768,7 +764,6 @@ async function saveUser(){const nom=$('#u-nom').value.trim();const rol=$('#u-rol
   if(id){const u=usuarios.find(x=>x.id===id);u.nombre=nom;u.rol=rol;u.sucursal=sucFinal;u.pin=pin;const a=$('#u-act');if(a)u.activo=a.dataset.v==='1';if(state.session&&state.session.id===u.id)state.session=u;}
   else usuarios.push({id:uid(),nombre:nom,usuario:nom.toLowerCase().replace(/\s+/g,''),pin:pin,rol:rol,sucursal:sucFinal,activo:true});
   await Store.setJSON(K.USERS,usuarios);state.userEdit=null;toast('Usuario guardado ✓');render();}
-async function toggleUser(id){const u=usuarios.find(x=>x.id===id);if(u.activo&&u.rol==='admin'&&usuarios.filter(x=>x.rol==='admin'&&x.activo).length<=1){toast('Debe quedar al menos un admin activo');return;}u.activo=!u.activo;await Store.setJSON(K.USERS,usuarios);render();}
 async function delUser(id){if(state.session&&state.session.id===id){toast('No podés eliminar tu propio usuario');return;}const u=usuarios.find(x=>x.id===id);if(u.rol==='admin'&&usuarios.filter(x=>x.rol==='admin'&&x.activo).length<=1){toast('Debe quedar al menos un admin');return;}usuarios=usuarios.filter(x=>x.id!==id);state.userEdit=null;toast('Usuario eliminado');render();}
 
 function medForm(id,cancelFn){const m=id?medicos.find(x=>x.id===id):null;
@@ -997,7 +992,6 @@ function listHTML(){const l=visibles();
 }
 function renderLista(){const t=state.role==='lab'?['Bandeja del laboratorio','Pedidos y recetas de todas las sucursales']:['Mis envíos','Seguí el estado de cada envío de '+state.sucursal];
   return `<div class="h1">${t[0]}</div><div class="sub">${t[1]}</div>${filterRow()}<div id="listHost">${listHTML()}</div>`;}
-async function hydrate(){for(const el of document.querySelectorAll('.ithumb[data-img]')){const im=await Store.get(K.IMG(el.dataset.img));if(im)el.src=im;}}
 async function accHydrate(){for(const el of document.querySelectorAll('.ithumb[data-img],.acc-img[data-img]')){const im=await Store.get(K.IMG(el.dataset.img));if(im)el.src=im;}}
 function toggleOrder(id){state.openId=state.openId===id?null:id;const lh=document.getElementById('listHost');if(lh){lh.innerHTML=listHTML();setTimeout(accHydrate,40);}}
 function orderDetailHTML(id){const o=orders.find(x=>x.id===id);if(!o)return '';
@@ -1027,7 +1021,6 @@ function orderDetailHTML(id){const o=orders.find(x=>x.id===id);if(!o)return '';
 }
 
 /* orderDetail -> see orderDetailHTML() + toggleOrder() (accordion) */
-function closeDw(){gsap.to('#dw',{y:'100%',x:'-50%',duration:.3,ease:'power2.in',onComplete:()=>$('#ov').classList.remove('on')});}
 function showRej(id){document.getElementById('rejBox').innerHTML=`<div class="group"><div class="fld"><label class="lbl">Motivo del rechazo</label><textarea class="ta" id="rej-motivo" placeholder="Ej: falta dosis, ilegible, sin stock de droga…"></textarea></div></div><button class="btn btn-red" onclick="rechazar('${id}')">Confirmar rechazo</button>`;}
 async function _save(){await Store.setJSON(K.ORD,orders);}
 async function tomar(id){const o=orders.find(x=>x.id===id);o.estado='aceptado';o.hist.push({estado:'aceptado',ts:Date.now(),by:state.op});await _save();toast('Pedido aceptado ✓');render();setTimeout(accHydrate,50);}
@@ -1427,8 +1420,11 @@ async function saveEnvio(){
   if(!_envGeo.precio&&!_envGeo.km){toast('Calculá la distancia y precio primero');return;}
   const dir=$('#env-dir')?.value.trim();if(!dir){toast('Falta la dirección');return;}
   let clienteId=$('#env-cli')?.value;
+  const nuevoNom=$('#env-nom')?.value.trim();
+  const nuevoVisible=$('#env-nuevo-form')&&$('#env-nuevo-form').style.display!=='none';
+  if(nuevoVisible&&nuevoNom)clienteId='';
   if(!clienteId){
-    const nom=$('#env-nom')?.value.trim();if(!nom){toast('Seleccioná un cliente o cargá uno nuevo');return;}
+    const nom=nuevoNom;if(!nom){toast('Seleccioná un cliente o cargá uno nuevo');return;}
     const nc={id:uid(),nombre:nom,telefono:$('#env-tel')?.value.trim()||'',direccion:dir,lat:_envGeo.lat,lon:_envGeo.lon,creado:Date.now(),activo:true};
     clientesEnvio.push(nc);await Store.setJSON(K.CLI,clientesEnvio);clienteId=nc.id;
   } else if(_envGeo.lat){
